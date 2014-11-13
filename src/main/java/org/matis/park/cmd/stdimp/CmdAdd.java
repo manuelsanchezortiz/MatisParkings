@@ -14,6 +14,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+
+import static org.matis.park.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -49,10 +52,13 @@ public class CmdAdd extends Cmd {
     protected void handleRequest(HttpExchange httpExchange) throws IOException {
         //TODO select it from factory using protocol version (attribute on request)
 
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Cmd Add parking");
+        }
+
         //load the post data
         ParkingSerializer dto= new ParkingSerializer();
 
-        //TODO improve read n parkings, the null parking may exists or not !!!
         BufferedReader br= new BufferedReader( new InputStreamReader( httpExchange.getRequestBody(), StandardCharsets.UTF_8) );
         Parking parking= dto.decode(br);
 

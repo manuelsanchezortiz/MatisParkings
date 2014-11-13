@@ -10,7 +10,7 @@ import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpMethod;
 import org.matis.park.util.HttpStatus;
 import org.matis.park.util.ParkException;
-import org.matis.park.util.TestUtils;
+import org.matis.park.util.Utils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -20,8 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static org.matis.park.cmd.stdimp.SharedConstants.*;
+import static org.matis.park.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -66,6 +68,11 @@ public class CmdQuery extends Cmd {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Cmd query");
+        }
+
+
         final ParkingDao parkingDao= (ParkingDao)httpExchange.getHttpContext().getAttributes().get(ServerCtx.PARKING_PERSISTENT_DAO);
 
         if ( parkingDao == null ){
@@ -73,7 +80,7 @@ public class CmdQuery extends Cmd {
             throw new ParkException( "Server context has no parking dao");
         }
 
-        final Map<String,String> params= TestUtils.decodeParamsFromQueryString(httpExchange.getRequestURI().getQuery() );
+        final Map<String,String> params= Utils.decodeParamsFromQueryString(httpExchange.getRequestURI().getQuery());
 
         //return a list of objects, first test
         int offset= 0;
@@ -95,7 +102,7 @@ public class CmdQuery extends Cmd {
             if (params.containsKey(PARAM_LAT)) {
                 Number n = null;
                 try {
-                    n = TestUtils.DECIMAL_FORMAT.parse(params.get(PARAM_LAT));
+                    n = Utils.DECIMAL_FORMAT.parse(params.get(PARAM_LAT));
                 } catch (ParseException e) {
                     throw new ParkException("Malformed param '" + PARAM_LAT + "'");
                 }
@@ -108,7 +115,7 @@ public class CmdQuery extends Cmd {
             if (params.containsKey(PARAM_LONG)) {
                 Number n = null;
                 try {
-                    n = TestUtils.DECIMAL_FORMAT.parse(params.get(PARAM_LONG));
+                    n = Utils.DECIMAL_FORMAT.parse(params.get(PARAM_LONG));
                 } catch (ParseException e) {
                     throw new ParkException("Malformed param '" + PARAM_LONG + "'");
                 }

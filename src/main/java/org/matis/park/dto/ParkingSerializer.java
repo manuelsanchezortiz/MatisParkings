@@ -3,7 +3,7 @@ package org.matis.park.dto;
 import com.sun.xml.internal.fastinfoset.stax.events.Util;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.ParkException;
-import org.matis.park.util.TestUtils;
+import org.matis.park.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -85,11 +85,11 @@ public class ParkingSerializer implements StringSerializer<Parking> {
         pw.print(LINE_SEP);
 
         if( o.getGpsLat() != null ) {
-            pw.print(TestUtils.DECIMAL_FORMAT.format(o.getGpsLat()));
+            pw.print(Utils.DECIMAL_FORMAT.format(o.getGpsLat()));
         }
         pw.print(LINE_SEP);
         if( o.getGpsLong() != null ) {
-            pw.print(TestUtils.DECIMAL_FORMAT.format(o.getGpsLong()));
+            pw.print(Utils.DECIMAL_FORMAT.format(o.getGpsLong()));
         }
         pw.print(LINE_SEP);
 
@@ -161,7 +161,7 @@ public class ParkingSerializer implements StringSerializer<Parking> {
 
             line = r.readLine();
             if(!Util.isEmptyString(line)){
-                Number n= TestUtils.DECIMAL_FORMAT.parse(line);
+                Number n= Utils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLat(n.floatValue());
                 }
@@ -169,7 +169,7 @@ public class ParkingSerializer implements StringSerializer<Parking> {
 
             line = r.readLine();
             if(!Util.isEmptyString(line)){
-                Number n= TestUtils.DECIMAL_FORMAT.parse(line);
+                Number n= Utils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLong(n.floatValue());
                 }

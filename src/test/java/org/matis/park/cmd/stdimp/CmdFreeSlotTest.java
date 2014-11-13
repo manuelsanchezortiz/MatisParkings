@@ -7,7 +7,7 @@ import org.matis.park.dto.CmdResponseSerializer;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpClient;
 import org.matis.park.util.HttpStatus;
-import org.matis.park.util.TestUtils;
+import org.matis.park.util.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,13 +48,13 @@ public class CmdFreeSlotTest {
             Map<String, Object> params= new HashMap<String, Object>(1);
             params.put( CmdUseSlot.PARAM_ID, p.getId() );
 
-            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, TestUtils.encodeParamsAsQueryString(params) );
+            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, Utils.encodeParamsAsQueryString(params) );
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             assertTrue( p.getAvailableSlots() ==  availableSlots +1 || p.getAvailableSlots() == p.getTotalSlots() );
 
             CmdResponseSerializer ser= new CmdResponseSerializer();
-            CmdResponse cr= ser.decode( r.getBufferedReader() );
+            CmdResponse cr= ser.decode(r.getBufferedReader());
 
             assertTrue( cr != null );
             assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
@@ -76,11 +76,11 @@ public class CmdFreeSlotTest {
 
             Map<String, Object> params= new HashMap<String, Object>(1);
             params.put( CmdUseSlot.PARAM_ID, 1 );
-            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, TestUtils.encodeParamsAsQueryString(params));
+            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, Utils.encodeParamsAsQueryString(params));
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             CmdResponseSerializer ser= new CmdResponseSerializer();
-            CmdResponse cr= ser.decode( r.getBufferedReader() );
+            CmdResponse cr= ser.decode(r.getBufferedReader());
 
             assertTrue( cr != null );
             assertTrue( cr.getAppCode() == CmdErrorCodes.ENTITY_NOT_FOUND );

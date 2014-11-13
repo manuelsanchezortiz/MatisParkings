@@ -3,8 +3,11 @@ package org.matis.park.cmd;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import static org.matis.park.util.TestUtils.checkNotEmpty;
-import static org.matis.park.util.TestUtils.checkNotNull;
+import java.util.logging.Level;
+
+import static org.matis.park.Logger.LOGGER;
+import static org.matis.park.util.Utils.checkNotEmpty;
+import static org.matis.park.util.Utils.checkNotNull;
 
 /**
  * Created by manuel on 5/11/14.
@@ -50,6 +53,10 @@ public class CmdRegistry implements ICmdRegistry {
 
         if( this.commands.containsKey(cmd.getCmd())){
             throw new AlreadyRegisteredException(cmd.getCmd());
+        }
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Adding cmd {0}", cmd.getCmd());
         }
 
         this.commands.put(cmd.getCmd(), cmd);

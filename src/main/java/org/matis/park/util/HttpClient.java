@@ -43,7 +43,7 @@ public class HttpClient {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        con.setRequestMethod("POST");
+        con.setRequestMethod( HttpMethod.POST.name());
         con.setDoInput(true);
         con.setDoOutput(true);
         con.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
@@ -69,8 +69,8 @@ public class HttpClient {
         String url = urlbase;
         url += Constants.CTX + "/" + cmd;
 
-        String paramsString = TestUtils.encodeParamsAsQueryString(params);
-        if (!TestUtils.isEmpty(paramsString)) {
+        String paramsString = Utils.encodeParamsAsQueryString(params);
+        if (!Utils.isEmpty(paramsString)) {
             url += "?" + paramsString;
         }
 
@@ -78,7 +78,7 @@ public class HttpClient {
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         // optional default is GET
-        con.setRequestMethod("GET");
+        con.setRequestMethod(HttpMethod.GET.name());
         Response r = new Response(con.getResponseCode(), con.getInputStream());
 
         return r;

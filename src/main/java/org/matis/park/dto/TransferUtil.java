@@ -14,8 +14,13 @@ import java.io.StringWriter;
  */
 public class TransferUtil {
 
-    //TODO si se usa solo para pruebas reorganizar, quizas todo en transfer util listo para jar diferente
+    //TODO think about plugable ???
 
+    /**
+     * Encode a parking as a string
+     * @param parking
+     * @return
+     */
     public static String parkingToString(Parking parking){
 
         ParkingSerializer ser= new ParkingSerializer();
@@ -30,7 +35,12 @@ public class TransferUtil {
 
         return sw.toString();
     }
-    //TODO se usa
+
+    /**
+     * Encode cmd response as a string
+     * @param cmdResponse
+     * @return
+     */
     public static String cmdResponseToString(CmdResponse cmdResponse){
 
         CmdResponseSerializer ser= new CmdResponseSerializer();
@@ -46,7 +56,11 @@ public class TransferUtil {
         return bw.toString();
     }
 
-    //TODO se usa
+    /**
+     * Encode cmd query response as string
+     * @param cmdQueryResponse
+     * @return
+     */
     public static String cmdQueryResponseToString(CmdQueryResponse cmdQueryResponse){
 
         CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();

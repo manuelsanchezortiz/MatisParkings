@@ -7,10 +7,13 @@ import org.matis.park.dao.ParkingDao;
 import org.matis.park.util.HttpMethod;
 import org.matis.park.util.HttpStatus;
 import org.matis.park.util.ParkException;
-import org.matis.park.util.TestUtils;
+import org.matis.park.util.Utils;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+
+import static org.matis.park.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -41,6 +44,11 @@ public class CmdUseSlot extends Cmd {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Cmd use slot");
+        }
+
         ParkingDao parkingDao= (ParkingDao)httpExchange.getHttpContext().getAttributes().get(ServerCtx.PARKING_PERSISTENT_DAO);
 
         if ( parkingDao == null ){
@@ -48,12 +56,12 @@ public class CmdUseSlot extends Cmd {
             throw new ParkException( "Server context has no parking dao");
         }
 
-        Map<String,String> params= TestUtils.decodeParamsFromQueryString(httpExchange.getRequestBody());
+        Map<String,String> params= Utils.decodeParamsFromQueryString(httpExchange.getRequestBody());
 
 
         Integer id=  null;
 
-        if( params.containsKey( PARAM_ID) && !TestUtils.isEmpty(params.get(PARAM_ID))) {
+        if( params.containsKey( PARAM_ID) && !Utils.isEmpty(params.get(PARAM_ID))) {
             try {
                 id = Integer.parseInt(params.get(PARAM_ID));
             } catch (NumberFormatException ex) {
@@ -65,7 +73,6 @@ public class CmdUseSlot extends Cmd {
             //protocol error
             this.sendResponse(httpExchange, HttpStatus.BAD_REQUEST, CmdResponse.CMD_RESPONSE_PROTOCOL_ERROR );
         }
-
 
         CmdResponse cr= parkingDao.useSlot(id);
 

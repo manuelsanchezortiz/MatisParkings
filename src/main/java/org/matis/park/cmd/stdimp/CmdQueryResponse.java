@@ -73,4 +73,13 @@ public class CmdQueryResponse extends CmdResponse {
         //copy the collection avoid modification from outside
         this.parkings= new ArrayList<Parking>(parkings);
     }
+
+    public String toString(){
+
+        StringBuilder sb= new StringBuilder( super.toString());
+
+
+
+        return sb.toString();
+    }
 }

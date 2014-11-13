@@ -7,7 +7,7 @@ import org.matis.park.dto.CmdResponseSerializer;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpClient;
 import org.matis.park.util.HttpStatus;
-import org.matis.park.util.TestUtils;
+import org.matis.park.util.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class CmdUseSlotTest {
 
             Map<String, Object> params= new HashMap<String, Object>(1);
             params.put( CmdUseSlot.PARAM_ID, p.getId() );
-            HttpClient.Response r= c.sendPost(Constants.CMD_USE_SLOT, TestUtils.encodeParamsAsQueryString(params));
+            HttpClient.Response r= c.sendPost(Constants.CMD_USE_SLOT, Utils.encodeParamsAsQueryString(params));
 
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
             //check operation was performed
@@ -77,7 +77,7 @@ public class CmdUseSlotTest {
             Map<String, Object> params= new HashMap<String, Object>(1);
             params.put( CmdUseSlot.PARAM_ID, 1 );
 
-            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, TestUtils.encodeParamsAsQueryString(params));
+            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, Utils.encodeParamsAsQueryString(params));
 
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 

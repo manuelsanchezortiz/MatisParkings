@@ -14,7 +14,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
-import static org.matis.park.util.TestUtils.checkNotEmpty;
+import static org.matis.park.util.Utils.checkNotEmpty;
 
 /**
  * Created by manuel on 6/11/14.

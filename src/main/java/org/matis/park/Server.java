@@ -9,6 +9,9 @@ import org.matis.park.cmd.stdimp.*;
 import org.matis.park.dao.ParkingDao;
 
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
+
+import static org.matis.park.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -47,6 +50,10 @@ public class Server {
             return;
         }
 
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Starting server...");
+        }
+
         registerCmds(cmdRegistry);
 
         this.server = HttpServer.create(new InetSocketAddress(8081), 0);
@@ -60,6 +67,10 @@ public class Server {
         }
 
         server.setExecutor(null); // creates a default executor
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Started server!");
+        }
         server.start();
     }
 
@@ -67,8 +78,17 @@ public class Server {
      * Stop the server
      */
     public void stop() {
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Stopping server...");
+        }
+
         this.server.stop(0);
         this.server= null;
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Stopped server");
+        }
+
     }
 
 

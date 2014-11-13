@@ -59,11 +59,10 @@ public class CmdResponse {
     }
 
     /**
-     * Encode the response
-     * @return the response with format appcode:appmessage
+     * Debug and logging
+     * @return
      */
-    public String encode( ){
-
+    public String toString(){
         StringBuilder sb= new StringBuilder();
         sb.append(this.getAppCode());
         sb.append(":");

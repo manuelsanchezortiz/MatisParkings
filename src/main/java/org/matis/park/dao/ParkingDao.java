@@ -5,11 +5,14 @@ import org.matis.park.cmd.stdimp.CmdResponse;
 import org.matis.park.modelobj.Parking;
 
 import java.util.*;
+import java.util.logging.Level;
+
+import static org.matis.park.Logger.LOGGER;
 
 /**
  * Created by manuel on 5/11/14.
  *
- * Improvements: Support partial object update (patch)
+ * Basic mutithread support: sync on this on every object (read ones also to have consistent views)
  */
 public class ParkingDao {
 
@@ -23,21 +26,39 @@ public class ParkingDao {
      * @param p, new parking
      * @return ok, duplicated or an invalid field response
      */
-    public CmdResponse insert(Parking p){
+    public synchronized CmdResponse insert(Parking p){
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Insert Parking: {0}", p);
+        }
 
         CmdResponse cr= this.validate(p);
 
         if( cr.getAppCode() != CmdErrorCodes.NONE ){
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Insert response: {0}", cr);
+            }
             return cr;
         }
 
         if( this.databaseMock.containsKey( p.getId())){
-            return new CmdResponse(CmdErrorCodes.DUPLICATED, CmdErrorCodes.getMessage(CmdErrorCodes.DUPLICATED));
+
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Insert response: {0}", cr);
+            }
+            cr= new CmdResponse(CmdErrorCodes.DUPLICATED, CmdErrorCodes.getMessage(CmdErrorCodes.DUPLICATED));
+
+            return cr;
         }
 
         this.databaseMock.put(p.getId(), p);
 
-        return CmdResponse.CMD_RESPONSE_OK;
+        cr= CmdResponse.CMD_RESPONSE_OK;
+        if( LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Insert response: {0}", cr);
+        }
+
+        return cr;
     }
 
     /**
@@ -45,26 +66,46 @@ public class ParkingDao {
      * @param p
      * @return
      */
-    public CmdResponse update(Parking p) {
+    public synchronized CmdResponse update(Parking p) {
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Update Parking: {0}", p);
+        }
 
         if( p.getId() == null ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Update response: {0}", cr);
+            }
+            return cr;
         }
 
         if( !this.databaseMock.containsKey( p.getId())){
-            return new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, new Integer(p.getId()).toString() );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, new Integer(p.getId()).toString() );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Update response: {0}", cr);
+            }
+            return cr;
         }
 
         CmdResponse cr= this.validate(p);
 
         if( cr.getAppCode() != CmdErrorCodes.NONE ){
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Update response: {0}", cr);
+            }
             return cr;
         }
 
         //replace object
         this.databaseMock.put(p.getId(), p);
 
-        return CmdResponse.CMD_RESPONSE_OK;
+        cr= CmdResponse.CMD_RESPONSE_OK;
+
+        if( LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Update response: {0}", cr);
+        }
+        return cr;
 
     }
 
@@ -74,21 +115,41 @@ public class ParkingDao {
      * @param id
      * @return
      */
-    public CmdResponse freeSlot(Integer id) {
+    public synchronized CmdResponse freeSlot(Integer id) {
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Free slot id: {0}", id);
+        }
 
         if( id == null ){
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "FreeSlot response: {0}", cr);
+            }
+            return cr;
         }
 
         if( !this.databaseMock.containsKey( id )){
-            return new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
+
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "FreeSlot response: {0}", cr);
+            }
+            return cr;
         }
 
         Parking p= this.databaseMock.get(id);
 
         if( p.getAvailableSlots() == null || p.getTotalSlots() == null ){
-            return CmdResponse.CMD_RESPONSE_OK;
+
+            CmdResponse cr=  CmdResponse.CMD_RESPONSE_OK;
+
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "FreeSlot response: {0}", cr);
+            }
+            return cr;
         }
 
         p.setAvailableSlots( p.getAvailableSlots() + 1 );
@@ -96,10 +157,21 @@ public class ParkingDao {
         if( p.getAvailableSlots() > p.getTotalSlots() ){
             p.setAvailableSlots( p.getTotalSlots() );
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "FreeSlot response: {0}", cr);
+            }
+
+            return cr;
         }
 
-        return CmdResponse.CMD_RESPONSE_OK;
+        CmdResponse cr= CmdResponse.CMD_RESPONSE_OK;
+
+        if( LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "FreeSlot response: {0}", cr);
+        }
+        return cr;
     }
 
     /**
@@ -108,22 +180,39 @@ public class ParkingDao {
      * @param id
      * @return
      */
-    public CmdResponse useSlot(Integer id) {
+    public synchronized CmdResponse useSlot(Integer id) {
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Use slot id: {0}", id);
+        }
 
 
         if( id == null ){
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Use slot response: {0}", cr);
+            }
+
+            return cr;
         }
 
         if( !this.databaseMock.containsKey( id )){
-            return new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Use slot response: {0}", cr);
+            }
+            return cr;
         }
 
         Parking p= this.databaseMock.get(id);
 
         if( p.getAvailableSlots() == null || p.getTotalSlots() == null ){
-            return CmdResponse.CMD_RESPONSE_OK;
+            CmdResponse cr= CmdResponse.CMD_RESPONSE_OK;
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Use slot response: {0}", cr);
+            }
+            return cr;
         }
 
         p.setAvailableSlots( p.getAvailableSlots() - 1 );
@@ -131,10 +220,18 @@ public class ParkingDao {
         if( p.getAvailableSlots() < 0 ){
             p.setAvailableSlots( 0 );
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            CmdResponse cr= new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
+            if( LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Use slot response: {0}", cr);
+            }
+            return cr;
         }
 
-        return CmdResponse.CMD_RESPONSE_OK;
+        CmdResponse cr= CmdResponse.CMD_RESPONSE_OK;
+        if( LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Use slot response: {0}", cr);
+        }
+        return cr;
 
     }
 
@@ -183,7 +280,7 @@ public class ParkingDao {
      * @param id, of the parking to retrieve
      * @return the parking with id of null if not found
      */
-    public Parking getParkingWithId(int id){
+    public synchronized Parking getParkingWithId(int id){
         return this.databaseMock.get(id);
     }
 
@@ -202,6 +299,14 @@ public class ParkingDao {
         private QueryResult(List<Parking> parkings, boolean end) {
             this.parkings = parkings;
             this.end = end;
+        }
+
+        /**
+         * For debugging and logging
+         * @return
+         */
+        public String toString(){
+            return "Found: " + (this.parkings == null ? 0 : this.parkings.size()) + " end=" + this.end;
         }
     }
 
@@ -225,7 +330,11 @@ public class ParkingDao {
      * @param count, number of items to return
      * @return
      */
-    public QueryResult queryAll(int offset, int count, Filter filter){
+    public synchronized QueryResult queryAll(int offset, int count, Filter filter){
+
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Query all offset/count: {0}/{1}" + filter != null ? " Filtered" : "", new Object[]{offset, count});
+        }
 
         List<Parking> r= new ArrayList<Parking>(count);
         Collection<Parking> parkings= this.databaseMock.values();
@@ -247,7 +356,12 @@ public class ParkingDao {
         }
         boolean end= i == parkings.size();
 
-        return new QueryResult( r, end);
+        QueryResult qr= new QueryResult( r, end);
+        if( LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Query result: {0}" , qr);
+        }
+
+        return qr;
     }
 
 }
