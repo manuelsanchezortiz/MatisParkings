@@ -4,21 +4,22 @@ package org.matis.park.cmd.stdimp;
 import org.junit.Test;
 import org.matis.park.Constants;
 import org.matis.park.Server;
-import org.matis.park.cmd.ICmd;
-import org.matis.park.dto.TextParkingDto;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.dto.CmdResponseSerializer;
+import org.matis.park.dto.TransferUtil;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpClient;
 import org.matis.park.util.HttpStatus;
 
-import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class CmdAddTest {
 
-    private IParking getAParking(){
-        IParking p= new Parking();
+    private Parking getAParking(){
+        Parking p= new Parking();
         p.setId(1);
         p.setName("Park01");
         p.setTotalSlots(100);
@@ -27,6 +28,7 @@ public class CmdAddTest {
         p.setClosingHour(18);
         p.setGpsLat(41.3850639f);
         p.setGpsLong(2.17340349f);
+        p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY)));
 
         return p;
     }
@@ -40,18 +42,17 @@ public class CmdAddTest {
         try {
             HttpClient c = new HttpClient();
 
-            final IParking p= this.getAParking();
+            final Parking p= this.getAParking();
 
-            final TextParkingDto dto= new TextParkingDto();
+            String s= TransferUtil.parkingToString(p);
 
-            HttpClient.Response r= c.sendPost(Constants.CMD_ADD, new HttpClient.DataWriter() {
-                @Override
-                public void write(OutputStream os) {
-                    dto.encode(p, os);
-                }
-            });
+            HttpClient.Response r= c.sendPost(Constants.CMD_ADD, s);
+
+            CmdResponseSerializer rs= new CmdResponseSerializer();
+            CmdResponse cr= rs.decode( r.getBufferedReader() );
 
             assertTrue(r.getHttpStatus() == HttpStatus.OK);
+            assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
 
         }finally {
             server.stop();
@@ -66,33 +67,21 @@ public class CmdAddTest {
         try {
             HttpClient c = new HttpClient();
 
-            final IParking p= this.getAParking();
+            final Parking p= this.getAParking();
+            String s= TransferUtil.parkingToString(p);
 
-            final TextParkingDto dto= new TextParkingDto();
-
-            HttpClient.Response r= c.sendPost(Constants.CMD_ADD, new HttpClient.DataWriter() {
-                @Override
-                public void write(OutputStream os) {
-                    dto.encode(p, os);
-                }
-            });
-
+            HttpClient.Response r= c.sendPost(Constants.CMD_ADD, s);
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
-            //may need to check validity of a parking, but not in this test
+            //may need to check response, but not in this test
 
-            r= c.sendPost(Constants.CMD_ADD, new HttpClient.DataWriter() {
-                @Override
-                public void write(OutputStream os) {
-                    dto.encode(p, os);
-                }
-            });
-
+            r= c.sendPost(Constants.CMD_ADD, s );
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             //Check cmd response, has to be duplicated
-            ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_ADD );
-            CmdResponse cr= cmdAdd.parseResponse( r.getResponse() );
+            CmdResponseSerializer ser= new CmdResponseSerializer();
+            CmdResponse cr= ser.decode( r.getBufferedReader() );
+
             assertTrue( cr != null );
             assertTrue( cr.getAppCode() == CmdErrorCodes.DUPLICATED );
 

@@ -1,24 +1,24 @@
 package org.matis.park.dto;
 
 import org.junit.Test;
-import org.matis.park.modelobj.IParking;
 import org.matis.park.modelobj.Parking;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
-public class TextParkingDtoTest {
+public class ParkingSerializerTest {
 
     @Test
     public void testEncode() throws Exception {
 
-
-        IParking p= new Parking();
+        Parking p= new Parking();
         p.setId(1);
         p.setName("Park01");
         p.setTotalSlots(100);
@@ -29,15 +29,16 @@ public class TextParkingDtoTest {
         p.setGpsLong(2.17340349f);
         p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY)));
 
-        TextParkingDto dto= new TextParkingDto();
+        ParkingSerializer s= new ParkingSerializer();
 
-        ByteArrayOutputStream os= new ByteArrayOutputStream();
+        StringWriter sw= new StringWriter();
+        BufferedWriter w= new BufferedWriter( sw );
 
-        dto.encode(p, os);
+        s.encode(p, w);
 
         //decode it,test if fields match
-
-        IParking newP= dto.decode(Parking.class, new ByteArrayInputStream( os.toByteArray()  ));
+        StringReader sr= new StringReader( sw.toString() );
+        Parking newP= s.decode(new BufferedReader(sr));
 
         assertEquals( p.getId(), newP.getId() );
         assertEquals( p.getName(), newP.getName() );
@@ -55,17 +56,20 @@ public class TextParkingDtoTest {
 
         //id is mandatory so this value as null means null object, also all blank fields
 
-        IParking p= new Parking();
-        TextParkingDto dto= new TextParkingDto();
+        Parking p= new Parking();
+        ParkingSerializer s= new ParkingSerializer();
 
-        ByteArrayOutputStream os= new ByteArrayOutputStream();
+        StringWriter sw= new StringWriter();
+        BufferedWriter w= new BufferedWriter( sw );
 
-        dto.encode(p, os);
+        s.encode(p, w);
+        w.flush();
 
         //decode it,test if fields match
+        StringReader sr= new StringReader( sw.toString() );
+        Parking newP= s.decode(new BufferedReader(sr));
 
-        IParking newP= dto.decode(Parking.class, new ByteArrayInputStream(os.toByteArray()));
-
+        //decode it,test if fields match
         assertTrue( newP == null);
 
     }
@@ -74,7 +78,7 @@ public class TextParkingDtoTest {
     public void whenIdFieldIsEmptyWeEncodeDecodeANullObject() throws Exception {
 
         //id is mandatory so this value as null means null object, also all blank fields
-        IParking p= new Parking();
+        Parking p= new Parking();
         //no id
         p.setName("Park01");
         p.setTotalSlots(100);
@@ -85,18 +89,18 @@ public class TextParkingDtoTest {
         p.setGpsLong(2.17340349f);
         p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY)));
 
-        TextParkingDto dto= new TextParkingDto();
+        ParkingSerializer s= new ParkingSerializer();
 
-        ByteArrayOutputStream os= new ByteArrayOutputStream();
+        StringWriter sw= new StringWriter();
+        BufferedWriter w= new BufferedWriter( sw );
 
-        dto.encode(p, os);
+        s.encode(p, w);
+        w.flush();
 
-        os.close();
+        StringReader sr= new StringReader( sw.toString() );
+        Parking newP= s.decode(new BufferedReader(sr));
 
-        //decode it,test if fields match
-
-        IParking newP= dto.decode(Parking.class, new ByteArrayInputStream( os.toByteArray()  ));
-
+        //with no id must be null
         assertTrue( newP == null);
 
     }
@@ -104,7 +108,7 @@ public class TextParkingDtoTest {
     @Test
     public void whenOpeningDaysIsNullDecodingDoesNotThrownErrorItRemainsNull() throws Exception {
 
-        IParking p= new Parking();
+        Parking p= new Parking();
         p.setId(1);
         p.setName("Park01");
         p.setTotalSlots(100);
@@ -113,20 +117,31 @@ public class TextParkingDtoTest {
         p.setClosingHour(18);
         p.setGpsLat(41.3850639f);
         p.setGpsLong(2.17340349f);
+        //no opening days
 
-        TextParkingDto dto= new TextParkingDto();
+        ParkingSerializer s= new ParkingSerializer();
 
-        ByteArrayOutputStream os= new ByteArrayOutputStream();
+        StringWriter sw= new StringWriter();
+        BufferedWriter w= new BufferedWriter( sw );
 
-        dto.encode(p, os);
+        s.encode(p, w);
 
         //decode it,test if fields match
+        StringReader sr= new StringReader( sw.toString() );
 
-        IParking newP= dto.decode(Parking.class, new ByteArrayInputStream( os.toByteArray()  ));
+        Parking newP= s.decode(new BufferedReader(sr));
 
         assertFalse( newP == null );
         assertTrue( newP.getOpeningDays() == null);
 
     }
 
+
+    public void whenQueryingARangeGetGoodResults() throws Exception {
+
+
+
+
+
+    }
 }

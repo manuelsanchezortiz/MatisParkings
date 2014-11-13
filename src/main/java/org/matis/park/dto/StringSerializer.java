@@ -1,14 +1,14 @@
 package org.matis.park.dto;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 
 /**
  * Created by manuel on 6/11/14.
  * <p>Is transferable if implements encode/decode; code and version: format major/minor
  * version. Major version are incompatible</p>
  */
-public interface TransferableObject<T> {
+public interface StringSerializer<T> {
 
     /**
      * Identifies the transferable policy
@@ -31,28 +31,16 @@ public interface TransferableObject<T> {
     /**
      * Encode the object
      * @param o, object to encode
-     * @param os, where o is encoded
+     * @param w, where to encode (could have been a string builder)
      */
-    public String encode(T o);
+    public void encode(T o, BufferedWriter w);
 
     /**
      * Decode the object
-     * @param T, desired return type
-     * @param is, data input
+     * @param r,encoded object as a string, we use a buffered reader to read line by line
      * @return the new object, maybe is null
      */
-    public T decode(Class<? extends T> T, String s);
+    public T decode(BufferedReader r);
 
-    /**
-     * Must return the content type we are creating
-     * @return the content type
-     */
-    public String getContentType();
-
-    /**
-     * Encoding, in case content type is text
-     * @return the encoding type
-     */
-    public String getEncoding();
 
 }

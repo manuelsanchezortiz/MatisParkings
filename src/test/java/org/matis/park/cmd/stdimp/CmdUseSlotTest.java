@@ -3,15 +3,12 @@ package org.matis.park.cmd.stdimp;
 import org.junit.Test;
 import org.matis.park.Constants;
 import org.matis.park.Server;
-import org.matis.park.cmd.ICmd;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.dto.CmdResponseSerializer;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpClient;
 import org.matis.park.util.HttpStatus;
 import org.matis.park.util.TestUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,8 +16,8 @@ import static org.junit.Assert.assertTrue;
 
 public class CmdUseSlotTest {
 
-    private IParking getAParking(){
-        IParking p= new Parking();
+    private Parking getAParking(){
+        Parking p= new Parking();
         p.setId(1);
         p.setName("Park01");
         p.setTotalSlots(100);
@@ -40,7 +37,7 @@ public class CmdUseSlotTest {
         server.start();
 
         //Easy no http request, tests are better if they are independent
-        final IParking p= this.getAParking();
+        final Parking p= this.getAParking();
         server.getParkingDao().insert( p );
 
         int availableSlots= p.getAvailableSlots();
@@ -48,27 +45,17 @@ public class CmdUseSlotTest {
         try {
             HttpClient c = new HttpClient();
 
-            HttpClient.Response r= c.sendPost(Constants.CMD_USE_SLOT, new HttpClient.DataWriter() {
-                @Override
-                public void write(OutputStream os) {
+            Map<String, Object> params= new HashMap<String, Object>(1);
+            params.put( CmdUseSlot.PARAM_ID, p.getId() );
+            HttpClient.Response r= c.sendPost(Constants.CMD_USE_SLOT, TestUtils.encodeParamsAsQueryString(params));
 
-                    Map<String, Object> params= new HashMap<String, Object>(1);
-                    params.put( CmdUseSlot.PARAM_ID, p.getId() );
-
-                    try {
-                        TestUtils.encodeParamsAsQueryString(params, os);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
-
+            //check operation was performed
             assertTrue( p.getAvailableSlots() ==  availableSlots -1 || p.getAvailableSlots() == 0 );
 
-            //Check cmd response, has to be duplicated
-            ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_USE_SLOT );
-            CmdResponse cr= cmdAdd.parseResponse( r.getResponse() );
+            CmdResponseSerializer ser= new CmdResponseSerializer();
+            CmdResponse cr= ser.decode( r.getBufferedReader() );
+
             assertTrue( cr != null );
             assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
 
@@ -87,25 +74,16 @@ public class CmdUseSlotTest {
         try {
             HttpClient c = new HttpClient();
 
-            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, new HttpClient.DataWriter() {
-                @Override
-                public void write(OutputStream os) {
+            Map<String, Object> params= new HashMap<String, Object>(1);
+            params.put( CmdUseSlot.PARAM_ID, 1 );
 
-                    Map<String, Object> params= new HashMap<String, Object>(1);
-                    params.put( CmdUseSlot.PARAM_ID, 1 );
+            HttpClient.Response r= c.sendPost(Constants.CMD_FREE_SLOT, TestUtils.encodeParamsAsQueryString(params));
 
-                    try {
-                        TestUtils.encodeParamsAsQueryString(params, os);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
-            //Check cmd response, has to be duplicated
-            ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_FREE_SLOT );
-            CmdResponse cr= cmdAdd.parseResponse( r.getResponse() );
+            CmdResponseSerializer ser= new CmdResponseSerializer();
+            CmdResponse cr= ser.decode( r.getBufferedReader() );
+
             assertTrue( cr != null );
             assertTrue( cr.getAppCode() == CmdErrorCodes.ENTITY_NOT_FOUND );
 

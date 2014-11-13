@@ -2,10 +2,9 @@ package org.matis.park.dao;
 
 import org.matis.park.cmd.stdimp.CmdErrorCodes;
 import org.matis.park.cmd.stdimp.CmdResponse;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.modelobj.Parking;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by manuel on 5/11/14.
@@ -15,16 +14,16 @@ import java.util.Map;
 public class ParkingDao {
 
     /**
-     * Simulated storage
+     * Simulated storage: A tree map which auto sorts by key (parking id)
      */
-    private Map<Integer, IParking> databaseMock= new HashMap<Integer, IParking>(5);
+    private Map<Integer, Parking> databaseMock= new TreeMap<Integer, Parking>();
 
     /**
      * Insert p
      * @param p, new parking
      * @return ok, duplicated or an invalid field response
      */
-    public CmdResponse insert(IParking p){
+    public CmdResponse insert(Parking p){
 
         CmdResponse cr= this.validate(p);
 
@@ -46,10 +45,10 @@ public class ParkingDao {
      * @param p
      * @return
      */
-    public CmdResponse update(IParking p) {
+    public CmdResponse update(Parking p) {
 
         if( p.getId() == null ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         if( !this.databaseMock.containsKey( p.getId())){
@@ -79,14 +78,14 @@ public class ParkingDao {
 
         if( id == null ){
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         if( !this.databaseMock.containsKey( id )){
             return new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
         }
 
-        IParking p= this.databaseMock.get(id);
+        Parking p= this.databaseMock.get(id);
 
         if( p.getAvailableSlots() == null || p.getTotalSlots() == null ){
             return CmdResponse.CMD_RESPONSE_OK;
@@ -97,7 +96,7 @@ public class ParkingDao {
         if( p.getAvailableSlots() > p.getTotalSlots() ){
             p.setAvailableSlots( p.getTotalSlots() );
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         return CmdResponse.CMD_RESPONSE_OK;
@@ -114,14 +113,14 @@ public class ParkingDao {
 
         if( id == null ){
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         if( !this.databaseMock.containsKey( id )){
             return new CmdResponse( CmdErrorCodes.ENTITY_NOT_FOUND, id.toString() );
         }
 
-        IParking p= this.databaseMock.get(id);
+        Parking p= this.databaseMock.get(id);
 
         if( p.getAvailableSlots() == null || p.getTotalSlots() == null ){
             return CmdResponse.CMD_RESPONSE_OK;
@@ -132,7 +131,7 @@ public class ParkingDao {
         if( p.getAvailableSlots() < 0 ){
             p.setAvailableSlots( 0 );
             //could have its own error
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         return CmdResponse.CMD_RESPONSE_OK;
@@ -153,27 +152,27 @@ public class ParkingDao {
      * @param p
      * @return a cmd response
      */
-    public CmdResponse validate( IParking p){
+    public CmdResponse validate( Parking p){
 
         //Test id, is mandatory
         if( p.getId() == null ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_ID );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_ID );
         }
 
         if( p.getTotalSlots() != null &&  p.getTotalSlots() < 0 ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_TOTAL_SLOTS );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_TOTAL_SLOTS );
         }
 
         if( p.getAvailableSlots() != null && !( p.getAvailableSlots() >= 0 && p.getAvailableSlots() < p.getTotalSlots()  )){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_AVAILABLE_SLOTS );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_AVAILABLE_SLOTS );
         }
 
         if( p.getGpsLat() != null && !(p.getGpsLat() >= -90 && p.getGpsLat() <= 90) ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_GPS_LAT );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_GPS_LAT );
         }
 
         if( p.getGpsLong() != null && !(p.getGpsLong() >= -180 && p.getGpsLong() <= 180) ){
-            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, IParking.FIELD_GPS_LONG );
+            return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_GPS_LONG );
         }
 
         return CmdResponse.CMD_RESPONSE_OK;
@@ -184,7 +183,71 @@ public class ParkingDao {
      * @param id, of the parking to retrieve
      * @return the parking with id of null if not found
      */
-    public IParking getParkingWithId(int id){
+    public Parking getParkingWithId(int id){
         return this.databaseMock.get(id);
     }
+
+    public static class QueryResult{
+        private List<Parking> parkings;
+        private boolean end;
+
+        public List<Parking> getParkings() {
+            return parkings;
+        }
+
+        public boolean isEnd() {
+            return end;
+        }
+
+        private QueryResult(List<Parking> parkings, boolean end) {
+            this.parkings = parkings;
+            this.end = end;
+        }
+    }
+
+    /**
+     * Filter
+     */
+    public interface Filter {
+
+        /**
+         * p is accepted on results or not
+         * @param p
+         * @return
+         */
+        public boolean accept(Parking p);
+
+    }
+
+    /**
+     * Returns a sorted list, by id, starting at offset and retrieving count objects
+     * @param offset, from 0
+     * @param count, number of items to return
+     * @return
+     */
+    public QueryResult queryAll(int offset, int count, Filter filter){
+
+        List<Parking> r= new ArrayList<Parking>(count);
+        Collection<Parking> parkings= this.databaseMock.values();
+
+        int i= 0;
+        for( Parking parking: parkings ){
+
+            if( i>= offset ){
+
+                if( filter == null || filter.accept(parking )){
+                    r.add(parking);
+                }
+            }
+
+            i++;
+            if( r.size() == count ){
+                break;
+            }
+        }
+        boolean end= i == parkings.size();
+
+        return new QueryResult( r, end);
+    }
+
 }

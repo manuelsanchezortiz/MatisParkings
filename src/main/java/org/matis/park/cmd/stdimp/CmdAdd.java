@@ -4,14 +4,16 @@ import com.sun.net.httpserver.HttpExchange;
 import org.matis.park.Constants;
 import org.matis.park.ServerCtx;
 import org.matis.park.dao.ParkingDao;
-import org.matis.park.dto.TextParkingDto;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.dto.ParkingSerializer;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpMethod;
 import org.matis.park.util.HttpStatus;
 import org.matis.park.util.ParkException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by manuel on 6/11/14.
@@ -40,7 +42,7 @@ public class CmdAdd extends Cmd {
     }
 
     /**
-     * * <p>Adds a parking. Get a parking object from the post data and calls {@link org.matis.park.dao.ParkingDao#insert(org.matis.park.modelobj.IParking)}</p>
+     * * <p>Adds a parking. Get a parking object from the post data and calls {@link org.matis.park.dao.ParkingDao#insert(org.matis.park.modelobj.Parking)}</p>
      * @param httpExchange
      * @throws IOException
      */
@@ -48,10 +50,11 @@ public class CmdAdd extends Cmd {
         //TODO select it from factory using protocol version (attribute on request)
 
         //load the post data
-        TextParkingDto dto= new TextParkingDto();
+        ParkingSerializer dto= new ParkingSerializer();
 
         //TODO improve read n parkings, the null parking may exists or not !!!
-        IParking parking= dto.decode(Parking.class, httpExchange.getRequestBody());
+        BufferedReader br= new BufferedReader( new InputStreamReader( httpExchange.getRequestBody(), StandardCharsets.UTF_8) );
+        Parking parking= dto.decode(br);
 
         if( parking == null ){
 

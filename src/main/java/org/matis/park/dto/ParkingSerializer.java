@@ -1,21 +1,20 @@
 package org.matis.park.dto;
 
 import com.sun.xml.internal.fastinfoset.stax.events.Util;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.modelobj.Parking;
 import org.matis.park.util.ParkException;
+import org.matis.park.util.TestUtils;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Locale;
 
 import static org.matis.park.Constants.LINE_SEP;
 
 /**
  * Created by manuel on 6/11/14.
- * <p>Transfer object: encoding/decoding policy</p>
+ * <p>Parking serializer: encoding/decoding policy</p>
  * <p>This policy is </p>
  * <li>Encode numeric data as text, currently int and float; formatted as a 0.00000000 are supported</li>
  * <li>Write each field in sequence (strict order) using a \n as a delimiter</li>
@@ -27,26 +26,16 @@ import static org.matis.park.Constants.LINE_SEP;
  * <li>decimal point is always .</li>
  * </p>
  */
-public class TextParkingDto implements TransferableObject<IParking> {
+public class ParkingSerializer implements StringSerializer<Parking> {
 
     /**
      * Transferable version
      */
-    public static final String VERSION= "1";
+    public static final int MAJOR_VERSION= 1;
+    public static final int MINOR_VERSION= 0;
 
-    public static final String CODE= "TextParkingDto";
+    public static final String CODE= "PARKING_SER";
     public static final int VERSION= 1;
-    public static final String CONTENT_TYPE= "text/plain";
-    private static final DecimalFormat DECIMAL_FORMAT= new DecimalFormat("0.00000000");
-
-    static {
-        //assure . always
-        DecimalFormatSymbols dfs= DecimalFormatSymbols.getInstance(Locale.ENGLISH );
-        dfs.setDecimalSeparator('.');
-        DECIMAL_FORMAT.setDecimalFormatSymbols( dfs );
-    }
-
-    private int version;
 
     @Override
     public String getCode() {
@@ -54,31 +43,18 @@ public class TextParkingDto implements TransferableObject<IParking> {
     }
 
     @Override
-    public int getVersion() {
-        return VERSION;
+    public int getMajorVersion() {
+        return MAJOR_VERSION;
     }
 
     @Override
-    public String getContentType() {
-        return CONTENT_TYPE;
+    public int getMinorVersion(){
+        return MINOR_VERSION;
     }
 
     @Override
-    public String getEncoding() {
-        return StandardCharsets.UTF_8.displayName();
-    }
+    public void encode(Parking o, BufferedWriter w) {
 
-
-
-    @Override
-    public void encode(IParking o, OutputStream os) {
-
-        OutputStreamWriter w= null;
-        try {
-            w = new OutputStreamWriter(os, this.getEncoding());
-        } catch (UnsupportedEncodingException e) {
-            throw new ParkException(e);
-        }
         PrintWriter pw= new PrintWriter(w);
 
         //do not use println as is platform dependent
@@ -109,18 +85,18 @@ public class TextParkingDto implements TransferableObject<IParking> {
         pw.print(LINE_SEP);
 
         if( o.getGpsLat() != null ) {
-            pw.print(DECIMAL_FORMAT.format(o.getGpsLat()));
+            pw.print(TestUtils.DECIMAL_FORMAT.format(o.getGpsLat()));
         }
         pw.print(LINE_SEP);
         if( o.getGpsLong() != null ) {
-            pw.print(DECIMAL_FORMAT.format(o.getGpsLong()));
+            pw.print(TestUtils.DECIMAL_FORMAT.format(o.getGpsLong()));
         }
         pw.print(LINE_SEP);
 
         if( o.getOpeningDays() != null ){
             int i = 0;
-            for (Integer integer : o.getOpeningDays()) {
-                pw.print(i);
+            for (Integer d : o.getOpeningDays()) {
+                pw.print(d);
                 if (i < o.getOpeningDays().size() - 1) {
                     pw.print(',');
                 }
@@ -137,23 +113,20 @@ public class TextParkingDto implements TransferableObject<IParking> {
      * We read the input stream line by line, we consume all lines as per field
      * count, the steam may contain more objects
      *
-     * @param tParking, desired return type
-     * @param is, data input
+     * @param r, data input
      * @return
      */
     @Override
-    public IParking decode(Class<? extends IParking> tParking, InputStream is) {
+    public Parking decode( BufferedReader r) {
 
-        IParking p= null;
+        Parking p= null;
 
-        //TODO manage throws
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(is, this.getEncoding()));
 
-            p= tParking.newInstance();
+            p= new Parking();
 
             //read each data in strict order
-            String line = in.readLine();
+            String line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setId( Integer.parseInt(line) );
             }else{
@@ -161,48 +134,48 @@ public class TextParkingDto implements TransferableObject<IParking> {
                 return null;
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setName(line);
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setOpeningHour(Integer.parseInt(line));
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setClosingHour(Integer.parseInt(line));
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setTotalSlots( Integer.parseInt(line) );
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setAvailableSlots( Integer.parseInt(line) );
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
-                Number n= DECIMAL_FORMAT.parse(line);
+                Number n= TestUtils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLat(n.floatValue());
                 }
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
-                Number n= DECIMAL_FORMAT.parse(line);
+                Number n= TestUtils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLong(n.floatValue());
                 }
             }
 
-            line = in.readLine();
+            line = r.readLine();
             if(!Util.isEmptyString(line)){
                 p.setOpeningDays(new HashSet<Integer>(5));
                 String[] days= line.split(",");

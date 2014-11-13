@@ -30,6 +30,13 @@ public class CmdResponse {
     private int appCode;
     private String appMessage;
 
+    /**
+     * For serialization
+     */
+    public CmdResponse(){
+
+    }
+
     public CmdResponse(int appCode, String appMessage) {
         this.appCode = appCode;
         this.appMessage = appMessage;
@@ -39,8 +46,16 @@ public class CmdResponse {
         return appCode;
     }
 
+    public void setAppCode( int appCode ){
+        this.appCode= appCode;
+    }
+
     public String getAppMessage() {
         return appMessage;
+    }
+
+    public void setAppMessage(String appMessage){
+        this.appMessage= appMessage;
     }
 
     /**

@@ -4,12 +4,14 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.matis.park.cmd.ICmd;
 import org.matis.park.cmd.ICmdHttpHandler;
+import org.matis.park.dto.CmdResponseSerializer;
 import org.matis.park.util.HttpMethod;
 import org.matis.park.util.HttpStatus;
-import org.matis.park.util.TestUtils;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 import static org.matis.park.util.TestUtils.checkNotEmpty;
@@ -37,51 +39,6 @@ public abstract class Cmd implements ICmd {
         return cmd;
     }
 
-    /**
-     * Raw response to parse from clients (integrated like unit testing)
-     * @param rawResponse, the raw response from the server
-     * @return a command response. If data is corrupted, we return an error
-     */
-    @Override
-    public CmdResponse parseResponse(String rawResponse) {
-        if(TestUtils.isEmpty(rawResponse)){
-            return null;
-        }
-
-        String s[]= rawResponse.split(":");
-
-        //must be two built with buildRawResponse, else very weird error,
-        //the same for the int
-
-        if( s.length != 2){
-            return CmdResponse.CMD_RESPONSE_INVALID;
-        }
-
-        int appCode;
-        try {
-            appCode = Integer.parseInt(s[0]);
-        }catch (NumberFormatException e){
-            return CmdResponse.CMD_RESPONSE_INVALID;
-        }
-
-        CmdResponse cr= new CmdResponse( appCode, s[1]);
-
-        return cr;
-    }
-
-    /**
-     * Builds raw response to use on the server
-     * @param cr
-     * @return
-     */
-    public String buildRawResponse( CmdResponse cr ){
-        StringBuilder sb= new StringBuilder();
-        sb.append(cr.getAppCode());
-        sb.append(":");
-        sb.append(cr.getAppMessage());
-
-        return sb.toString();
-    }
 
     /**
      * <p>Checks http method and return:</p>
@@ -153,7 +110,7 @@ public abstract class Cmd implements ICmd {
     }
 
     /**
-     * Send response, used by subclasses
+     * Send response
      * @param httpStatus
      * @param cr
      */
@@ -163,10 +120,13 @@ public abstract class Cmd implements ICmd {
         //java is utf-8
         responseHeaders.set("Content-Type", "text/html;charset=UTF-8");
 
-        //TODO buildresponse change it to CR auto encode
+        CmdResponseSerializer responseSerializer= new CmdResponseSerializer();
 
-        String response= this.buildRawResponse(cr);
-        byte[] bytes= response.getBytes(StandardCharsets.UTF_8.name());
+        StringWriter sw= new StringWriter();
+        responseSerializer.encode( cr, new BufferedWriter(sw) );
+        String response= sw.toString();
+
+        byte[] bytes= response.getBytes(StandardCharsets.UTF_8);
         httpExchange.sendResponseHeaders(httpStatus, bytes.length);
 
         OutputStream os = httpExchange.getResponseBody();

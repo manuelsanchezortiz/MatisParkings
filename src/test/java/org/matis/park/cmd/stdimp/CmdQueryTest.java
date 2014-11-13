@@ -1,27 +1,28 @@
 package org.matis.park.cmd.stdimp;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.matis.park.Constants;
 import org.matis.park.Server;
 import org.matis.park.cmd.ICmd;
-import org.matis.park.dto.TextParkingDto;
-import org.matis.park.modelobj.IParking;
+import org.matis.park.dto.CmdQueryResponseSerializer;
 import org.matis.park.modelobj.Parking;
 import org.matis.park.util.HttpClient;
 import org.matis.park.util.HttpStatus;
 
-import java.io.InputStream;
 import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CmdQueryTest {
 
-    private Collection<IParking> getParkings(){
+    private Collection<Parking> getParkings(){
 
-        Collection<IParking> r= new ArrayList<IParking>(5);
+        Collection<Parking> r= new ArrayList<Parking>(5);
 
-        IParking p= new Parking();
+        Parking p= new Parking();
         p.setId(1);
         p.setName("Park01");
         p.setTotalSlots(1000);
@@ -30,7 +31,7 @@ public class CmdQueryTest {
         p.setClosingHour(18);
         p.setGpsLat(41.3850639f);
         p.setGpsLong(2.17340349f);
-        p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY )));
+        p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY)));
         r.add( p );
 
         p= new Parking();
@@ -58,17 +59,44 @@ public class CmdQueryTest {
         r.add( p );
 
 
+        p= new Parking();
+        p.setId(4);
+        p.setName("Park04");
+        p.setTotalSlots(50);
+        p.setAvailableSlots(12);
+        p.setOpeningHour(16);
+        p.setClosingHour(4);
+        p.setGpsLat(41.500736f);
+        p.setGpsLong(2.272467f);
+        p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY, Calendar.MONDAY )));
+        r.add( p );
+
+
+        p= new Parking();
+        p.setId(5);
+        p.setName("Park05");
+        p.setTotalSlots(1500);
+        p.setAvailableSlots(50);
+        p.setOpeningHour(9);
+        p.setClosingHour(18);
+        p.setGpsLat(41.300736f);
+        p.setGpsLong(2.072467f);
+        p.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY )));
+        r.add( p );
+
         return r;
     }
 
+
     @Test
-    public void whenQueryingAllReturnAll() throws Exception {
+
+    public void when01QueryingAllReturnAll() throws Exception {
 
         Server server= new Server();
         server.start();
 
         //Easy no http request, tests are better if they are independent
-        for( IParking p: this.getParkings() ){
+        for( Parking p: this.getParkings() ){
             server.getParkingDao().insert(p);
         }
 
@@ -76,47 +104,61 @@ public class CmdQueryTest {
         try {
             HttpClient c = new HttpClient();
 
-            HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, null, new HttpClient.DataReader() {
-                @Override
-                public void read(InputStream is) {
-
-
-
-                }
-            });
-
-            final TextParkingDto dto= new TextParkingDto();
+            HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, null);
 
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_QUERY );
-            CmdResponse cr= cmdAdd.parseResponse( r.getResponse() );
+
+            CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
+            CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
+
             assertTrue( cr != null );
 
-            //All data fits in page size, or not
-
             assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
+            assertTrue( cr.getCount() == cr.getParkings().size() );
+            assertTrue( cr.getParkings().size() == 5 );
 
-            assertTrue( cr.getAppCode() == CmdErrorCodes.NONE_PARTIAL );
 
+        }finally {
+            server.stop();
+        }
+    }
 
+    @Test
+    public void when02QueryingAllOpenReturnTheExpectedList() throws Exception {
 
-/*
+        Server server= new Server();
+        server.start();
+
+        //Easy no http request, tests are better if they are independent
+        for( Parking p: this.getParkings() ){
+            server.getParkingDao().insert(p);
+        }
+
+        //query data
+        try {
+            HttpClient c = new HttpClient();
+
+            Map<String,Object> params= new HashMap<String, Object>();
+            params.put( SharedConstants.PARAM_COUNT, 2 );
+            params.put( SharedConstants.PARAM_OFFSET, 1 );
+
+            HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, params);
 
             assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
-            //update the stored object
-            pStored= server.getParkingDao().getParkingWithId(pStored.getId());
+            ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_QUERY );
 
-            //now if stored one has been changed to be equal to the modified one used in the http request
-            assertEquals(pStored, pUsedToModifyWithHttpRequest  );
+            CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
+            CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
 
-            //Check cmd response, has to be duplicated
-            ICmd cmdAdd= server.getCmdRegistry().getCmd( Constants.CMD_UPDATE );
-            CmdResponse cr= cmdAdd.parseResponse( r.getResponse() );
             assertTrue( cr != null );
+
             assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
-*/
+            assertTrue( 2 == cr.getParkings().size() );
+            assertTrue( cr.getParkings().get(0).getId() == 2 );
+            assertTrue( cr.getParkings().get(1).getId() == 3 );
 
         }finally {
             server.stop();

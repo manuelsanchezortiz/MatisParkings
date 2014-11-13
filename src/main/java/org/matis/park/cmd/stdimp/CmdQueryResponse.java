@@ -1,14 +1,10 @@
 package org.matis.park.cmd.stdimp;
 
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import org.matis.park.dto.TransferableObject;
+import org.matis.park.modelobj.Parking;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by manuel on 8/11/14.
@@ -16,11 +12,11 @@ import java.util.Collection;
  * A query response
  *
  */
-public class CmdQueryResponse<T> extends CmdResponse {
+public class CmdQueryResponse extends CmdResponse {
 
     private int count;
     private boolean end;
-    private Collection<T> objects;
+    private List<Parking> parkings;
 
     /**
      *
@@ -28,6 +24,10 @@ public class CmdQueryResponse<T> extends CmdResponse {
      */
     public int getCount() {
         return count;
+    }
+
+    public void setCount(int count){
+        this.count= count;
     }
 
     /**
@@ -38,6 +38,25 @@ public class CmdQueryResponse<T> extends CmdResponse {
         return end;
     }
 
+    public void setEnd(boolean b){
+        this.end= end;
+    }
+
+    public List<Parking> getParkings(){
+        return this.parkings;
+    }
+
+    public void setParkings(List<Parking> parkings){
+        this.parkings= new ArrayList<Parking>(parkings);
+    }
+
+    /**
+     * Used on serializers
+     */
+    public CmdQueryResponse(){
+
+    }
+
     /**
      *
      * @param appCode, application code
@@ -45,34 +64,13 @@ public class CmdQueryResponse<T> extends CmdResponse {
      * @param end, if there isn't more
      * @param appMessage, application message
      */
-    public CmdQueryResponse(int appCode, int count, boolean end, String appMessage, Collection<T> objects) {
+    public CmdQueryResponse(int appCode, int count, boolean end, String appMessage, Collection<Parking> parkings) {
         super(appCode, appMessage);
 
         this.count= count;
         this.end= end;
 
         //copy the collection avoid modification from outside
-        this.objects= new ArrayList<T>(objects.size());
-        this.objects.addAll(objects);
-
+        this.parkings= new ArrayList<Parking>(parkings);
     }
-
-
-    //TODO refactor CmdResponse & CmdQueryResponse to encode and decode themselves from is/os
-
-    /**
-     * <p>Encodes itself on an output stream.</p>
-     * <ul>
-     *     <li>One line with cmd status</li>
-     *     <li>Then all the objects using the desired coder</li>
-     * </ul>
-     * @param coder, the coder to use
-     */
-    public String encode(TransferableObject<T> coder){
-
-
-
-    }
-
-
 }
