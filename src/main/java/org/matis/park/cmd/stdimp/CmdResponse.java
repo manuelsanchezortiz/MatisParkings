@@ -60,14 +60,10 @@ public class CmdResponse {
 
     /**
      * Debug and logging
-     * @return
+     * @return string rep. of this
      */
     public String toString(){
-        StringBuilder sb= new StringBuilder();
-        sb.append(this.getAppCode());
-        sb.append(":");
-        sb.append(this.getAppMessage());
 
-        return sb.toString();
+        return String.valueOf(this.getAppCode()) + ":" + this.getAppMessage();
     }
 }

@@ -1,22 +1,20 @@
-package org.matis.park.cmd.stdimp;
+package org.matis.park.server;
 
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.matis.park.dto.CmdQueryResponseSerializer;
 import org.matis.park.model.Parking;
-import org.matis.park.server.Server;
-import org.matis.park.server.util.HttpClient;
-import org.matis.park.server.util.HttpStatus;
 
 import java.util.*;
 
-import static org.junit.Assert.assertTrue;
+/**
+ * Created by manuel on 5/11/14.
+ * <p>This class starts the server with sample data, see method {@link #main(String[])} for arguments</p>
+ */
+public class Service {
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CmdQueryTest {
-
-    private Collection<Parking> getParkings(){
+    /**
+     * Sample data
+     * @return some initial data preloaded into the server this service class publishes
+     */
+    private static Collection<Parking> getParkings(){
 
         Collection<Parking> r= new ArrayList<Parking>(5);
 
@@ -85,77 +83,38 @@ public class CmdQueryTest {
         return r;
     }
 
-
-    @Test
-
-    public void when01QueryingAllReturnAll() throws Exception {
+    /**
+     *
+     * @param args, only one the port to use for listening for requests
+     * @throws Exception
+     */
+    public static void main(String[] args) throws Exception {
 
         Server server= new Server();
-        server.start();
 
         //Easy no http request, tests are better if they are independent
-        for( Parking p: this.getParkings() ){
+        for( Parking p: getParkings() ){
             server.getParkingDao().insert(p);
         }
 
-        //query data
-        try {
-            HttpClient c = new HttpClient();
+        if( args.length >= 1 ){
 
-            HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, null);
+            try {
+                int port = Integer.parseInt(args[0]);
+                server.start(port);
 
-            assertTrue( r.getHttpStatus() == HttpStatus.OK );
+            }catch (NumberFormatException ex ){
+                System.out.println("Invalid port, aborting!");
+                System.err.println("Invalid port, aborting!");
+                //undefined error
+                System.exit(-1);
+            }
 
-            CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
-            CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
-
-            assertTrue( cr != null );
-
-            assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
-            assertTrue( cr.getCount() == cr.getParkings().size() );
-            assertTrue( cr.getParkings().size() == 5 );
-
-
-        }finally {
-            server.stop();
-        }
-    }
-
-    @Test
-    public void when02QueryingAllOpenReturnTheExpectedList() throws Exception {
-
-        Server server= new Server();
-        server.start();
-
-        //Easy no http request, tests are better if they are independent
-        for( Parking p: this.getParkings() ){
-            server.getParkingDao().insert(p);
+        }else {
+            server.start();
         }
 
-        //query data
-        try {
-            HttpClient c = new HttpClient();
-
-            Map<String,Object> params= new HashMap<String, Object>();
-            params.put( SharedConstants.PARAM_COUNT, 2 );
-            params.put( SharedConstants.PARAM_OFFSET, 1 );
-
-            HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, params);
-
-            assertTrue( r.getHttpStatus() == HttpStatus.OK );
-
-            CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
-            CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
-
-            assertTrue( cr != null );
-
-            assertTrue( cr.getAppCode() == CmdErrorCodes.NONE );
-            assertTrue( 2 == cr.getParkings().size() );
-            assertTrue( cr.getParkings().get(0).getId() == 2 );
-            assertTrue( cr.getParkings().get(1).getId() == 3 );
-
-        }finally {
-            server.stop();
-        }
+        System.out.println("Server started!");
+        System.out.println("Sample use: 'curl http://localhost:8080/parksvc/query?count=2");
     }
 }

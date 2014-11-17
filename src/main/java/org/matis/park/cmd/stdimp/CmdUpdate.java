@@ -1,14 +1,13 @@
 package org.matis.park.cmd.stdimp;
 
 import com.sun.net.httpserver.HttpExchange;
-import org.matis.park.Constants;
-import org.matis.park.ServerCtx;
+import org.matis.park.server.ServerCtx;
 import org.matis.park.dao.ParkingDao;
 import org.matis.park.dto.ParkingSerializer;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.HttpMethod;
-import org.matis.park.util.HttpStatus;
-import org.matis.park.util.ParkException;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.HttpMethod;
+import org.matis.park.server.util.HttpStatus;
+import org.matis.park.server.util.ParkException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
-import static org.matis.park.Logger.LOGGER;
+import static org.matis.park.server.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -44,8 +43,8 @@ public class CmdUpdate extends Cmd {
     }
 
     /**
-     * <p>Updates existing parking. Get a parking object from the post data and calls {@link org.matis.park.dao.ParkingDao#update(org.matis.park.modelobj.Parking)}</p>
-     * @param httpExchange
+     * <p>Updates existing parking. Get a parking object from the post data and calls {@link org.matis.park.dao.ParkingDao#update(org.matis.park.model.Parking)}</p>
+     * @param httpExchange, the exchange data
      * @throws IOException
      */
     protected void handleRequest(HttpExchange httpExchange) throws IOException {

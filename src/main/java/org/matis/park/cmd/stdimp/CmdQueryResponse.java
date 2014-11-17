@@ -1,6 +1,6 @@
 package org.matis.park.cmd.stdimp;
 
-import org.matis.park.modelobj.Parking;
+import org.matis.park.model.Parking;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class CmdQueryResponse extends CmdResponse {
     }
 
     public void setEnd(boolean b){
-        this.end= end;
+        this.end= b;
     }
 
     public List<Parking> getParkings(){
@@ -78,7 +78,8 @@ public class CmdQueryResponse extends CmdResponse {
 
         StringBuilder sb= new StringBuilder( super.toString());
 
-
+        sb.append(":count=" + this.getCount());
+        sb.append(":end="+ this.isEnd());
 
         return sb.toString();
     }

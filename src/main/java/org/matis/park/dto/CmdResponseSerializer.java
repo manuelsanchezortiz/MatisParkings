@@ -4,7 +4,7 @@ import org.matis.park.cmd.stdimp.CmdResponse;
 
 /**
  * Created by manuel on 10/11/14.
- * <p>Fields in strict order using {@link org.matis.park.Constants#LINE_SEP}</p>
+ * <p>Fields in strict order using {@link org.matis.park.dto.Constants#LINE_SEP}</p>
  * <ul>
  *     <li>Field: app code, type int</li>
  *     <li>Field: app message, type string, optional. It does not contain the line separator never</li>

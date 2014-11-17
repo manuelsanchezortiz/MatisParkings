@@ -10,7 +10,7 @@ public class CmdRegistryTest {
     @Test( expected = CmdRegistry.AlreadyRegisteredException.class)
     public void whenAddingRepeatedCommandExceptionIsThrown() throws Exception {
 
-        ICmdRegistry reg= new CmdRegistry();
+        CmdRegistry reg= new CmdRegistry();
 
         ICmd cmd= new CmdAdd();
 

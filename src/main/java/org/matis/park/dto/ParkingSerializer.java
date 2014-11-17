@@ -1,16 +1,15 @@
 package org.matis.park.dto;
 
-import com.sun.xml.internal.fastinfoset.stax.events.Util;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.ParkException;
-import org.matis.park.util.Utils;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.ParkException;
+import org.matis.park.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.util.HashSet;
 
-import static org.matis.park.Constants.LINE_SEP;
+import static org.matis.park.dto.Constants.LINE_SEP;
 
 /**
  * Created by manuel on 6/11/14.
@@ -28,29 +27,8 @@ import static org.matis.park.Constants.LINE_SEP;
  */
 public class ParkingSerializer implements StringSerializer<Parking> {
 
-    /**
-     * Transferable version
-     */
-    public static final int MAJOR_VERSION= 1;
-    public static final int MINOR_VERSION= 0;
-
     public static final String CODE= "PARKING_SER";
     public static final int VERSION= 1;
-
-    @Override
-    public String getCode() {
-        return CODE;
-    }
-
-    @Override
-    public int getMajorVersion() {
-        return MAJOR_VERSION;
-    }
-
-    @Override
-    public int getMinorVersion(){
-        return MINOR_VERSION;
-    }
 
     @Override
     public void encode(Parking o, BufferedWriter w) {
@@ -114,12 +92,12 @@ public class ParkingSerializer implements StringSerializer<Parking> {
      * count, the steam may contain more objects
      *
      * @param r, data input
-     * @return
+     * @return the parking decoded from r
      */
     @Override
     public Parking decode( BufferedReader r) {
 
-        Parking p= null;
+        Parking p;
 
         try {
 
@@ -127,7 +105,7 @@ public class ParkingSerializer implements StringSerializer<Parking> {
 
             //read each data in strict order
             String line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setId( Integer.parseInt(line) );
             }else{
                 //id is mandatory, else null
@@ -135,32 +113,32 @@ public class ParkingSerializer implements StringSerializer<Parking> {
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setName(line);
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setOpeningHour(Integer.parseInt(line));
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setClosingHour(Integer.parseInt(line));
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setTotalSlots( Integer.parseInt(line) );
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setAvailableSlots( Integer.parseInt(line) );
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 Number n= Utils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLat(n.floatValue());
@@ -168,7 +146,7 @@ public class ParkingSerializer implements StringSerializer<Parking> {
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 Number n= Utils.DECIMAL_FORMAT.parse(line);
                 if( n != null ) {
                     p.setGpsLong(n.floatValue());
@@ -176,7 +154,7 @@ public class ParkingSerializer implements StringSerializer<Parking> {
             }
 
             line = r.readLine();
-            if(!Util.isEmptyString(line)){
+            if(!Utils.isEmpty(line)){
                 p.setOpeningDays(new HashSet<Integer>(5));
                 String[] days= line.split(",");
                 for( String day: days ){

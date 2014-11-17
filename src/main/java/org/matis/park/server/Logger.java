@@ -1,7 +1,8 @@
-package org.matis.park;
+package org.matis.park.server;
 
 /**
  * Created by manuel on 13/11/14.
+ * <p>Logger for this package</p>
  */
 public class Logger {
 

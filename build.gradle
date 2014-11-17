@@ -1,7 +1,11 @@
 apply plugin: 'java'
 
+apply plugin:'application'
+
 sourceCompatibility = 1.6
 version = '1.0'
+
+mainClassName= 'org.matis.park.server.Service'
 
 repositories {
     mavenCentral()

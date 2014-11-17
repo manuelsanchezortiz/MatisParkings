@@ -1,7 +1,7 @@
 package org.matis.park.dto;
 
 import org.junit.Test;
-import org.matis.park.modelobj.Parking;
+import org.matis.park.model.Parking;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

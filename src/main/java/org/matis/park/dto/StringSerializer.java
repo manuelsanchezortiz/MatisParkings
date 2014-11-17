@@ -5,28 +5,9 @@ import java.io.BufferedWriter;
 
 /**
  * Created by manuel on 6/11/14.
- * <p>Is transferable if implements encode/decode; code and version: format major/minor
- * version. Major version are incompatible</p>
+ * <p>A Serializer to/from simple string</p>
  */
 public interface StringSerializer<T> {
-
-    /**
-     * Identifies the transferable policy
-     * @return
-     */
-    public String getCode();
-
-    /**
-     * Major version, compatible
-     * @return
-     */
-    public int getMajorVersion();
-
-    /**
-     * Minor version, incompatible
-     * @return
-     */
-    public int getMinorVersion();
 
     /**
      * Encode the object

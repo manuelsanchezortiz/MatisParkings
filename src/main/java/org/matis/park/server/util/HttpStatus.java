@@ -1,7 +1,8 @@
-package org.matis.park.util;
+package org.matis.park.server.util;
 
 /**
  * Created by manuel on 6/11/14.
+ * <p>Used http status codes</p>
  */
 public class HttpStatus {
 

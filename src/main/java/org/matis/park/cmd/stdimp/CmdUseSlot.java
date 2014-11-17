@@ -1,19 +1,18 @@
 package org.matis.park.cmd.stdimp;
 
 import com.sun.net.httpserver.HttpExchange;
-import org.matis.park.Constants;
-import org.matis.park.ServerCtx;
+import org.matis.park.server.ServerCtx;
 import org.matis.park.dao.ParkingDao;
-import org.matis.park.util.HttpMethod;
-import org.matis.park.util.HttpStatus;
-import org.matis.park.util.ParkException;
-import org.matis.park.util.Utils;
+import org.matis.park.server.util.HttpMethod;
+import org.matis.park.server.util.HttpStatus;
+import org.matis.park.server.util.ParkException;
+import org.matis.park.Utils;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 
-import static org.matis.park.Logger.LOGGER;
+import static org.matis.park.server.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.

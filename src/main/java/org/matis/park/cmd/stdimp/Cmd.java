@@ -5,19 +5,22 @@ import com.sun.net.httpserver.HttpExchange;
 import org.matis.park.cmd.ICmd;
 import org.matis.park.cmd.ICmdHttpHandler;
 import org.matis.park.dto.CmdResponseSerializer;
-import org.matis.park.util.HttpMethod;
-import org.matis.park.util.HttpStatus;
+import org.matis.park.server.util.HttpMethod;
+import org.matis.park.server.util.HttpStatus;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
-import static org.matis.park.util.Utils.checkNotEmpty;
+import static org.matis.park.Utils.checkNotEmpty;
+import static org.matis.park.server.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
+ * <p>Basic command functionality</p>
  */
 public abstract class Cmd implements ICmd {
 
@@ -43,7 +46,7 @@ public abstract class Cmd implements ICmd {
     /**
      * <p>Checks http method and return:</p>
      * <ul>
-     *     <li>Method is invalid or in subclasses malformed in any way: {@link org.matis.park.util.HttpStatus#BAD_REQUEST} </li>
+     *     <li>Method is invalid or in subclasses malformed in any way: {@link org.matis.park.server.util.HttpStatus#BAD_REQUEST} </li>
      *     <li>Else  Ok</li>
      * </ul>
      * <p>Then calls {@link #handleRequest(com.sun.net.httpserver.HttpExchange)} this is the method you must override</p>
@@ -53,7 +56,7 @@ public abstract class Cmd implements ICmd {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
-        if( httpExchange.getRequestMethod().equals( this.getHttpMethod() ) ){
+        if( !httpExchange.getRequestMethod().equals( this.getHttpMethod().name() ) ){
 
             //Protocol Error
             this.sendResponse(httpExchange, HttpStatus.BAD_REQUEST, CmdResponse.CMD_RESPONSE_PROTOCOL_ERROR);
@@ -63,14 +66,14 @@ public abstract class Cmd implements ICmd {
         try {
             this.handleRequest(httpExchange);
         }catch( RuntimeException re){
-            //TODO logging
+            LOGGER.log(Level.WARNING, "Something wrong", re);
             //send internal server error and rethrow
             this.sendInternalError(httpExchange);
 
             throw re;
         }catch( IOException e){
-            //send internal server error and rethrow
-            //TODO logging
+            LOGGER.log(Level.WARNING, "Something wrong", e);
+
             this.sendInternalError(httpExchange);
             throw e;
         }
@@ -111,8 +114,9 @@ public abstract class Cmd implements ICmd {
 
     /**
      * Send response
-     * @param httpStatus
-     * @param cr
+     * @param httpExchange, the exchange data
+     * @param httpStatus, status to send
+     * @param cr, the response to encode
      */
     protected void sendResponse( HttpExchange httpExchange, int httpStatus, CmdResponse cr ) throws IOException{
         Headers responseHeaders= httpExchange.getResponseHeaders();

@@ -1,10 +1,11 @@
 package org.matis.park.cmd;
 
 import com.sun.net.httpserver.HttpHandler;
-import org.matis.park.util.HttpMethod;
+import org.matis.park.server.util.HttpMethod;
 
 /**
  * Created by manuel on 5/11/14.
+ * <p>Interface for implementing new commands</p>
  */
 public interface ICmd extends HttpHandler {
 

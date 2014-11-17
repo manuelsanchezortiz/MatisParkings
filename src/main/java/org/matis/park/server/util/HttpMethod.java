@@ -1,4 +1,4 @@
-package org.matis.park.util;
+package org.matis.park.server.util;
 
 /**
  * Created by manuel on 6/11/14.
@@ -9,5 +9,5 @@ public enum HttpMethod {
     POST,
     PUT,
     DELETE,
-    HEAD;
+    HEAD
 }

@@ -1,6 +1,6 @@
-package org.matis.park.modelobj;
+package org.matis.park.model;
 
-import org.matis.park.Constants;
+import org.matis.park.cmd.stdimp.Haversine;
 
 import java.text.DateFormatSymbols;
 import java.util.GregorianCalendar;
@@ -9,6 +9,7 @@ import java.util.Set;
 
 /**
  * Created by manuel on 5/11/14.
+ * <p>The parking data object</p>
  */
 public class Parking {
 
@@ -48,13 +49,13 @@ public class Parking {
 
     /**
      * Line separator not allowed
-     * @param name
+     * @param name, name of the parking
      */
     
     public void setName(String name) {
 
         if( name != null ){
-            name= name.replace(Constants.LINE_SEP, ' ');
+            name= name.replace("\n", "").replace("\r", "");
         }
 
         this.name = name;
@@ -135,16 +136,14 @@ public class Parking {
     /**
      * Test if this is opened on gc. If a need data is not present, we take the worst scenario. Validation will
      * check data but the method if safe
-     * @param gc
-     * @return
+     * @param gc, date/time to check parking openness
+     * @return if the parking is opened on gc
      */
     public boolean isOpened(GregorianCalendar gc){
 
-        boolean r= true;
-
         int currentDayOfWeek= gc.get( GregorianCalendar.DAY_OF_WEEK );
 
-        r= r && this.getOpeningDays() != null && this.getOpeningDays().contains( currentDayOfWeek );
+        boolean r= this.getOpeningDays() != null && this.getOpeningDays().contains( currentDayOfWeek );
         //also the time
         int currentHour= gc.get( GregorianCalendar.HOUR_OF_DAY );
 
@@ -158,25 +157,25 @@ public class Parking {
     /**
      * Test if the parking is full, if data is not present result is the worst scenario: true. Validation will
      * check data but the method if safe
-     * @return
+     * @return whether the parking is full or not
      */
     public boolean isFull(){
 
-        return  this.getAvailableSlots() == null ? true : this.getAvailableSlots() == 0;
+        return this.getAvailableSlots() == null || this.getAvailableSlots() == 0;
     }
 
     /**
-     * .25 degre in real app the longitude distance depends upon latitude and ...
+     * Near is about 500 meters
      */
-    public static final float NEAR_EPSILON= .25f;
+    public static final float NEAR_METERS= 500;
 
     /**
      * Test if this is near. If data is missing, worst scenario, it's not near. We only check float values
      * are near. In a real app. we need to do some maths.(or DB will do it for us)
      *
-     * @param lat
-     * @param longitude
-     * @return
+     * @param lat, latitude in degrees
+     * @param longitude, longitude in degrees
+     * @return if the gps coordinates are near of this using the epsilon {@link #NEAR_METERS}
      */
     public boolean isNear(float lat, float longitude) {
 
@@ -184,7 +183,9 @@ public class Parking {
             return false;
         }
 
-        return Math.round( Math.abs( this.getGpsLat() - lat  )) < NEAR_EPSILON && Math.round( Math.abs( this.getGpsLong() - longitude  )) < NEAR_EPSILON;
+        double d= Haversine.haversine( this.getGpsLat(), this.getGpsLong(), lat, longitude  );
+
+        return d < NEAR_METERS;
 
     }
 
@@ -212,9 +213,8 @@ public class Parking {
         if (name != null ? !name.equals(parking.name) : parking.name != null) return false;
         if (openingDays != null ? !openingDays.equals(parking.openingDays) : parking.openingDays != null) return false;
         if (openingHour != null ? !openingHour.equals(parking.openingHour) : parking.openingHour != null) return false;
-        if (totalSlots != null ? !totalSlots.equals(parking.totalSlots) : parking.totalSlots != null) return false;
+        return !(totalSlots != null ? !totalSlots.equals(parking.totalSlots) : parking.totalSlots != null);
 
-        return true;
     }
 
 
@@ -242,8 +242,8 @@ public class Parking {
 //    }
 
     /**
-     * Best practices, when implementing equals, add hashcode
-     * @return
+     * Best practices, when implementing equals, add a hashcode
+     * @return the hash code
      */
     @Override
     public int hashCode() {
@@ -261,7 +261,7 @@ public class Parking {
 
     /**
      * String rep. (suitable for debug)
-     * @return
+     * @return a string rep. of this
      */
     public String toString(){
         StringBuilder sb= new StringBuilder();

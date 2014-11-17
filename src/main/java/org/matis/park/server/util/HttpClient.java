@@ -1,6 +1,7 @@
-package org.matis.park.util;
+package org.matis.park.server.util;
 
-import org.matis.park.Constants;
+import org.matis.park.Utils;
+import org.matis.park.cmd.stdimp.Constants;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -10,34 +11,40 @@ import java.util.Map;
 
 /**
  * Created by manuel on 6/11/14.
+ * <p>This is an http client used to write test cases at the moment</p>
  */
 public class HttpClient {
 
-    //not needed ???
-    private final String USER_AGENT = "Mozilla/5.0";
-    private String urlbase = "http://localhost:8081";
+    public static final int DEFAULT_PORT= 8080;
+
+    private String urlBase = "http://localhost:" + DEFAULT_PORT;
 
     /**
-     * Use default url
+     * Use default url for this client
      */
     public HttpClient() {
     }
 
+    /**
+     * <p>Use another url, protocol and port must be included, for example</p>
+     * <code>http://localhost:8080</code>
+     * @param url, url to use, set it when different from the default one which is <code>http://localhost:&gt;{@link #DEFAULT_PORT}&lt;</code>
+     */
     public HttpClient(String url) {
-        this.urlbase = url;
+        this.urlBase = url;
     }
 
     /**
      * Send a post request using a writer to upload data. The response result is returned
      *
-     * @param cmd
-     * @param payload, data enconded as a string
+     * @param cmd, the command to execute
+     * @param payload, data encoded as a string
      * @return the response, http status and may a message (may be null)
      * @throws Exception
      */
     public Response sendPost(String cmd, String payload) throws Exception {
 
-        String url = urlbase;
+        String url = urlBase;
         url += Constants.CTX + "/" + cmd;
 
         URL obj = new URL(url);
@@ -50,9 +57,7 @@ public class HttpClient {
         con.getOutputStream().flush();
         con.getOutputStream().close();
 
-        Response r = new Response(con.getResponseCode(), con.getInputStream());
-
-        return r;
+        return new Response(con.getResponseCode(), con.getInputStream());
 
     }
 
@@ -62,11 +67,11 @@ public class HttpClient {
      * @param cmd,        command to execute
      * @param params,     for the get
      * @return the response, http status and may a message (may be null)
-     * @throws Exception
+     * @throws IOException
      */
     public Response sendGet(String cmd, Map<String, Object> params) throws IOException {
 
-        String url = urlbase;
+        String url = urlBase;
         url += Constants.CTX + "/" + cmd;
 
         String paramsString = Utils.encodeParamsAsQueryString(params);
@@ -99,7 +104,7 @@ public class HttpClient {
         /**
          * Http status
          *
-         * @return
+         * @return http status
          */
         public int getHttpStatus() {
             return httpStatus;
@@ -108,7 +113,7 @@ public class HttpClient {
         /**
          * Response is
          *
-         * @return
+         * @return the input stream in the response
          */
         public InputStream getInputStream() {
             return inputStream;
@@ -116,7 +121,7 @@ public class HttpClient {
 
         /**
          * Most used UTF-8 buffered reader
-         * @return
+         * @return a buffered reader with the input stream using utf-8
          */
         public BufferedReader getBufferedReader(){
             return new BufferedReader( new InputStreamReader(this.getInputStream(), StandardCharsets.UTF_8));

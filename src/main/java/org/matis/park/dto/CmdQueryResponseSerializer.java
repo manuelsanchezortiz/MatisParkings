@@ -1,9 +1,9 @@
 package org.matis.park.dto;
 
-import com.sun.xml.internal.fastinfoset.stax.events.Util;
+import org.matis.park.Utils;
 import org.matis.park.cmd.stdimp.CmdQueryResponse;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.ParkException;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.ParkException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,11 +11,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.matis.park.Constants.LINE_SEP;
+import static org.matis.park.dto.Constants.LINE_SEP;
 
 /**
  * Created by manuel on 10/11/14.
- * <p>Fields in strict order using {@link org.matis.park.Constants#LINE_SEP}</p>
+ * <p>Fields in strict order using {@link org.matis.park.dto.Constants#LINE_SEP}</p>
  * <ul>
  *     <li>Field: app code, type int</li>
  *     <li>Field: app message, type string, optional. It does not contain the line separator never</li>
@@ -37,11 +37,6 @@ public class CmdQueryResponseSerializer extends CmdResponseSerializerBase<CmdQue
      */
     public CmdQueryResponseSerializer(){
         super(CmdQueryResponse.class);
-    }
-
-    @Override
-    public String getCode() {
-        return CODE;
     }
 
     @Override
@@ -73,7 +68,7 @@ public class CmdQueryResponseSerializer extends CmdResponseSerializerBase<CmdQue
      * count, the steam may contain more objects
      *
      * @param r, data input
-     * @return
+     * @return the cmd query response object
      */
     @Override
     public CmdQueryResponse decode( BufferedReader r) {
@@ -83,7 +78,7 @@ public class CmdQueryResponseSerializer extends CmdResponseSerializerBase<CmdQue
         try {
             //read each data in strict order
             String line = r.readLine();
-            if (!Util.isEmptyString(line)) {
+            if (!Utils.isEmpty(line)) {
                 cqr.setCount(Integer.parseInt(line));
             } else {
                 //id is mandatory, else null
@@ -91,7 +86,7 @@ public class CmdQueryResponseSerializer extends CmdResponseSerializerBase<CmdQue
             }
 
             line= r.readLine();
-            if( !Util.isEmptyString(line)){
+            if( !Utils.isEmpty(line)){
                 cqr.setEnd( line.equals(TRUE)  );
             }else{
                 throw new ParkException("Data format error");

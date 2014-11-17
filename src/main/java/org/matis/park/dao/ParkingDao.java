@@ -2,12 +2,12 @@ package org.matis.park.dao;
 
 import org.matis.park.cmd.stdimp.CmdErrorCodes;
 import org.matis.park.cmd.stdimp.CmdResponse;
-import org.matis.park.modelobj.Parking;
+import org.matis.park.model.Parking;
 
 import java.util.*;
 import java.util.logging.Level;
 
-import static org.matis.park.Logger.LOGGER;
+import static org.matis.park.server.Logger.LOGGER;
 
 /**
  * Created by manuel on 5/11/14.
@@ -63,8 +63,8 @@ public class ParkingDao {
 
     /**
      * Validate and update existing p. The id is used to replace the object which must exists
-     * @param p
-     * @return
+     * @param p, parking to add
+     * @return a response
      */
     public synchronized CmdResponse update(Parking p) {
 
@@ -112,8 +112,8 @@ public class ParkingDao {
     /**
      * Free slots, +1 on available slots up to total slots. As slots are optional, this action may do nothing
      *
-     * @param id
-     * @return
+     * @param id, parking identifier
+     * @return a response
      */
     public synchronized CmdResponse freeSlot(Integer id) {
 
@@ -177,8 +177,8 @@ public class ParkingDao {
     /**
      * Use slots, -1 on available slots down to 0. As slots are optional, this action may do nothing
      *
-     * @param id
-     * @return
+     * @param id, parking identifier
+     * @return a response
      */
     public synchronized CmdResponse useSlot(Integer id) {
 
@@ -246,8 +246,9 @@ public class ParkingDao {
      *     <li>We allow a parking to not open any day, we could have test more things...</li>
      * </ul>
      *
-     * @param p
-     * @return a cmd response
+     * @param p, parking to validate
+     * @return a cmd response which contains the validation result. It cmd code is different from {@link CmdErrorCodes#NONE} it
+     * can be directly returned to the client
      */
     public CmdResponse validate( Parking p){
 
@@ -260,7 +261,7 @@ public class ParkingDao {
             return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_TOTAL_SLOTS );
         }
 
-        if( p.getAvailableSlots() != null && !( p.getAvailableSlots() >= 0 && p.getAvailableSlots() < p.getTotalSlots()  )){
+        if( p.getAvailableSlots() != null && p.getTotalSlots() != null && !( p.getAvailableSlots() >= 0 && p.getAvailableSlots() < p.getTotalSlots()  )){
             return new CmdResponse( CmdErrorCodes.NULL_OR_INVALID_FIELD, Parking.FIELD_AVAILABLE_SLOTS );
         }
 
@@ -303,7 +304,7 @@ public class ParkingDao {
 
         /**
          * For debugging and logging
-         * @return
+         * @return a string rep. of this
          */
         public String toString(){
             return "Found: " + (this.parkings == null ? 0 : this.parkings.size()) + " end=" + this.end;
@@ -317,8 +318,8 @@ public class ParkingDao {
 
         /**
          * p is accepted on results or not
-         * @param p
-         * @return
+         * @param p, parking to test in the filter
+         * @return if p is accepted
          */
         public boolean accept(Parking p);
 
@@ -328,7 +329,7 @@ public class ParkingDao {
      * Returns a sorted list, by id, starting at offset and retrieving count objects
      * @param offset, from 0
      * @param count, number of items to return
-     * @return
+     * @return a {@link org.matis.park.dao.ParkingDao.QueryResult} object
      */
     public synchronized QueryResult queryAll(int offset, int count, Filter filter){
 

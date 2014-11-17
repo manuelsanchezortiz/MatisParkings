@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import static org.matis.park.Logger.LOGGER;
-import static org.matis.park.util.Utils.checkNotEmpty;
-import static org.matis.park.util.Utils.checkNotNull;
+import static org.matis.park.server.Logger.LOGGER;
+import static org.matis.park.Utils.checkNotEmpty;
+import static org.matis.park.Utils.checkNotNull;
 
 /**
  * Created by manuel on 5/11/14.
@@ -15,12 +15,12 @@ import static org.matis.park.util.Utils.checkNotNull;
  *
  * <p>Implementation notes</p>:
  * <ul>
- *     <li>Unchecked exceptions used as this class is developer oriented and new commands will be usually be correct</li>
+ *     <li>Unchecked exceptions used as this class is developer oriented and new commands will be usually correct</li>
  *     <li>No message translations of errors, as this class is developer oriented</li>
  * </ul>
  *
  */
-public class CmdRegistry implements ICmdRegistry {
+public class CmdRegistry {
 
     private Map<String, ICmd> commands= new HashMap<String, ICmd>(5);
 
@@ -45,7 +45,7 @@ public class CmdRegistry implements ICmdRegistry {
 
     /**
      * Adds commands to the registry
-     * @param cmd
+     * @param cmd, command to add
      */
     public void addCmd(ICmd cmd){
 
@@ -62,17 +62,18 @@ public class CmdRegistry implements ICmdRegistry {
         this.commands.put(cmd.getCmd(), cmd);
     }
 
-    @Override
+    /**
+     * @return the collection of commands registered
+     */
     public Collection<ICmd> getCmds() {
         return this.commands.values();
     }
 
     /**
-     *
+     * Get the desired command
      * @param id, of the command
      * @return null if id is not found or the cmd for this id
      */
-    @Override
     public ICmd getCmd(String id) {
         return this.commands.get(id);
     }
@@ -83,7 +84,7 @@ public class CmdRegistry implements ICmdRegistry {
      *     <li>id is mandatory</li>
      *     <li>id is mandatory</li>
      * </ul>
-     * @param cmd
+     * @param cmd, the command to check
      */
     protected void checkIsAGoodCommand(ICmd cmd){
 

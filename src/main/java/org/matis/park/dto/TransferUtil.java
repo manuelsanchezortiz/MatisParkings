@@ -2,8 +2,8 @@ package org.matis.park.dto;
 
 import org.matis.park.cmd.stdimp.CmdQueryResponse;
 import org.matis.park.cmd.stdimp.CmdResponse;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.ParkException;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.ParkException;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,12 +14,10 @@ import java.io.StringWriter;
  */
 public class TransferUtil {
 
-    //TODO think about plugable ???
-
     /**
      * Encode a parking as a string
      * @param parking
-     * @return
+     * @return string rep. of the parking
      */
     public static String parkingToString(Parking parking){
 
@@ -39,7 +37,7 @@ public class TransferUtil {
     /**
      * Encode cmd response as a string
      * @param cmdResponse
-     * @return
+     * @return string representation of the response
      */
     public static String cmdResponseToString(CmdResponse cmdResponse){
 
@@ -59,7 +57,7 @@ public class TransferUtil {
     /**
      * Encode cmd query response as string
      * @param cmdQueryResponse
-     * @return
+     * @return string rep. of a {@link org.matis.park.cmd.stdimp.CmdQueryResponse}
      */
     public static String cmdQueryResponseToString(CmdQueryResponse cmdQueryResponse){
 

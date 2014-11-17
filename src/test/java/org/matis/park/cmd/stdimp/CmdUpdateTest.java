@@ -1,14 +1,12 @@
 package org.matis.park.cmd.stdimp;
 
 import org.junit.Test;
-import org.matis.park.Constants;
-import org.matis.park.Server;
 import org.matis.park.dto.CmdResponseSerializer;
-import org.matis.park.dto.ParkingSerializer;
 import org.matis.park.dto.TransferUtil;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.HttpClient;
-import org.matis.park.util.HttpStatus;
+import org.matis.park.model.Parking;
+import org.matis.park.server.Server;
+import org.matis.park.server.util.HttpClient;
+import org.matis.park.server.util.HttpStatus;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -54,9 +52,6 @@ public class CmdUpdateTest {
         pUsedToModifyWithHttpRequest.setOpeningHour(7);
         pUsedToModifyWithHttpRequest.setClosingHour(20);
         pUsedToModifyWithHttpRequest.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
-
-        final ParkingSerializer dto= new ParkingSerializer();
-
 
         //update via http
         try {
@@ -106,9 +101,6 @@ public class CmdUpdateTest {
         pUsedToModifyWithHttpRequest.setOpeningHour(7);
         pUsedToModifyWithHttpRequest.setClosingHour(20);
         pUsedToModifyWithHttpRequest.setOpeningDays(new HashSet<Integer>(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)));
-
-        final ParkingSerializer dto= new ParkingSerializer();
-
 
         //update via http
         try {

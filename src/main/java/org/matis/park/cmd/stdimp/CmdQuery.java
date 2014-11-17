@@ -2,15 +2,14 @@ package org.matis.park.cmd.stdimp;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
-import org.matis.park.Constants;
-import org.matis.park.ServerCtx;
+import org.matis.park.server.ServerCtx;
 import org.matis.park.dao.ParkingDao;
 import org.matis.park.dto.CmdQueryResponseSerializer;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.HttpMethod;
-import org.matis.park.util.HttpStatus;
-import org.matis.park.util.ParkException;
-import org.matis.park.util.Utils;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.HttpMethod;
+import org.matis.park.server.util.HttpStatus;
+import org.matis.park.server.util.ParkException;
+import org.matis.park.Utils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import static org.matis.park.cmd.stdimp.SharedConstants.*;
-import static org.matis.park.Logger.LOGGER;
+import static org.matis.park.server.Logger.LOGGER;
 
 /**
  * Created by manuel on 6/11/14.
@@ -55,14 +54,12 @@ public class CmdQuery extends Cmd {
      * <ul>
      *     <li>offset, type int, where to start results, defaults to 0</li>
      *     <li>count, type int, how many results to retrieve, defaults to 10</li>
-     *     <li>open, type boolean, T (case insensitive) else false, if present filters by pakings open status now</li>
+     *     <li>open, type boolean, T (case insensitive) else false, if present filters by parkings open status now</li>
      *     <li>full, type boolean, T (case insensitive) else false, if present filters by parkings with or without available slots</li>
-     *     <li>lat, long, type float, format 0.000000, filters to those near them: simple a .25 deg before and after:
-     *     using a great aprox. this will be a 25km box (long may be less based on lat). Both of neither of them
-     *     is mandatory</li>
+     *     <li>lat, long, type float, format 0.000000, filters to those near them. {@link org.matis.park.model.Parking#NEAR_METERS} in meters</li>
      *     <li></li>
      * </ul>
-     * @param httpExchange
+     * @param httpExchange, the exchange data
      * @throws IOException
      */
     @Override
@@ -100,7 +97,7 @@ public class CmdQuery extends Cmd {
 
 
             if (params.containsKey(PARAM_LAT)) {
-                Number n = null;
+                Number n;
                 try {
                     n = Utils.DECIMAL_FORMAT.parse(params.get(PARAM_LAT));
                 } catch (ParseException e) {
@@ -113,7 +110,7 @@ public class CmdQuery extends Cmd {
 
 
             if (params.containsKey(PARAM_LONG)) {
-                Number n = null;
+                Number n;
                 try {
                     n = Utils.DECIMAL_FORMAT.parse(params.get(PARAM_LONG));
                 } catch (ParseException e) {
@@ -128,34 +125,42 @@ public class CmdQuery extends Cmd {
         final Boolean finalFull= full;
         final Float finalLong= longitude;
         final Float finalLat= lat;
-        ParkingDao.QueryResult qr= parkingDao.queryAll( offset, count, new ParkingDao.Filter(){
-            public boolean accept(Parking p){
 
-                boolean r= true;
+        ParkingDao.Filter filter= null;
 
-                if( finalOpen != null ){
-                    GregorianCalendar gc= new GregorianCalendar();
+        //assign a filter only if its needed
+        if( finalOpen != null || finalFull != null || (finalLat != null && finalLong != null )){
+            new ParkingDao.Filter(){
+                public boolean accept(Parking p){
 
-                    boolean isOpened= p.isOpened(gc);
+                    boolean r= true;
 
-                    r= r && ( finalOpen ? isOpened : !isOpened);
+                    if( finalOpen != null ){
+                        GregorianCalendar gc= new GregorianCalendar();
+
+                        boolean isOpened= p.isOpened(gc);
+
+                        r= r && ( finalOpen ? isOpened : !isOpened);
+                    }
+
+                    if( finalFull != null ){
+
+                        boolean isFull= p.isFull();
+
+                        r= r && ( finalFull ? isFull : !isFull );
+                    }
+
+                    if( finalLat != null && finalLong != null ){
+
+                        r= r && p.isNear( finalLat, finalLong);
+                    }
+
+                    return r;
                 }
+            };
+        }
 
-                if( finalFull != null ){
-
-                    boolean isFull= p.isFull();
-
-                    r= r && ( finalFull ? isFull : !isFull );
-                }
-
-                if( finalLat != null && finalLong != null ){
-
-                    r= r && p.isNear( finalLat, finalLong);
-                }
-
-                return r;
-            }
-        });
+        ParkingDao.QueryResult qr= parkingDao.queryAll( offset, count, filter);
 
         CmdQueryResponse cmdQueryResponse= new CmdQueryResponse(
                 CmdErrorCodes.NONE,
@@ -170,8 +175,9 @@ public class CmdQuery extends Cmd {
 
     /**
      * Send response
-     * @param httpStatus
-     * @param cr
+     * @param httpExchange, the exchange data
+     * @param httpStatus, status to send
+     * @param cr, response to encode
      */
     protected void sendResponse( HttpExchange httpExchange, int httpStatus, CmdQueryResponse cr ) throws IOException{
         Headers responseHeaders= httpExchange.getResponseHeaders();

@@ -1,13 +1,12 @@
 package org.matis.park.cmd.stdimp;
 
 import org.junit.Test;
-import org.matis.park.Constants;
-import org.matis.park.Server;
+import org.matis.park.server.Server;
 import org.matis.park.dto.CmdResponseSerializer;
-import org.matis.park.modelobj.Parking;
-import org.matis.park.util.HttpClient;
-import org.matis.park.util.HttpStatus;
-import org.matis.park.util.Utils;
+import org.matis.park.model.Parking;
+import org.matis.park.server.util.HttpClient;
+import org.matis.park.server.util.HttpStatus;
+import org.matis.park.Utils;
 
 import java.util.HashMap;
 import java.util.Map;

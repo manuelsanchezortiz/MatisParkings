@@ -3,7 +3,7 @@ package org.matis.park.dao;
 import org.junit.Test;
 import org.matis.park.cmd.stdimp.CmdErrorCodes;
 import org.matis.park.cmd.stdimp.CmdResponse;
-import org.matis.park.modelobj.Parking;
+import org.matis.park.model.Parking;
 
 import java.util.*;
 
@@ -210,7 +210,7 @@ public class ParkingDaoTest {
 
         assertTrue(cr.getAppCode() == CmdErrorCodes.NONE );
 
-        assertTrue(p.getAvailableSlots() == av + 1 || p.getAvailableSlots() == p.getTotalSlots() );
+        assertTrue(p.getAvailableSlots() == av + 1 || p.getAvailableSlots().equals( p.getTotalSlots() ));
     }
 
     @Test
