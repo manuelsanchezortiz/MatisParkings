@@ -2,14 +2,17 @@ package org.matis.park.server;
 
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
+import org.matis.park.cmd.CmdProxy;
 import org.matis.park.cmd.CmdRegistry;
 import org.matis.park.cmd.ICmd;
 import org.matis.park.cmd.ICmdGroup;
-import org.matis.park.cmd.stdimp.*;
+import org.matis.park.cmd.stdimp.Constants;
 import org.matis.park.dao.ParkingDao;
 
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 
 import static org.matis.park.server.Logger.LOGGER;
@@ -74,10 +77,17 @@ public class Server {
 
         String ctx = Constants.CTX + "/";
 
+        Set<String> registeredCmds= new HashSet<String>();//control already registered
         for (ICmd cmd : cmdRegistry.getCmds()) {
 
-            HttpContext httpCtx= server.createContext(ctx + cmd.getCmd(), cmd);
+            if( registeredCmds.contains( cmd.getCmd() )){
+                continue;
+            }
+
+            HttpContext httpCtx= server.createContext(ctx + cmd.getCmd(), new CmdProxy(cmd.getCmd()));
+
             httpCtx.getAttributes().put( ServerCtx.PARKING_PERSISTENT_DAO, parkingDao );
+            httpCtx.getAttributes().put( ServerCtx.COMMAND_REGISTRY, cmdRegistry );
         }
 
         server.setExecutor(null); // creates a default executor

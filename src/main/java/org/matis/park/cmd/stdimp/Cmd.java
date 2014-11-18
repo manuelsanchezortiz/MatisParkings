@@ -1,18 +1,13 @@
 package org.matis.park.cmd.stdimp;
 
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.matis.park.cmd.ICmd;
 import org.matis.park.cmd.ICmdHttpHandler;
-import org.matis.park.dto.CmdResponseSerializer;
+import org.matis.park.cmd.Tools;
 import org.matis.park.server.util.HttpMethod;
 import org.matis.park.server.util.HttpStatus;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 import static org.matis.park.Utils.checkNotEmpty;
@@ -42,6 +37,15 @@ public abstract class Cmd implements ICmd {
         return cmd;
     }
 
+
+    /**
+     * Version allows multiple versions of the same command to coexist
+     * @return
+     */
+    @Override
+    public String getVersion(){
+        return "001";
+    }
 
     /**
      * <p>Checks http method and return:</p>
@@ -97,7 +101,7 @@ public abstract class Cmd implements ICmd {
      */
     protected void sendOk(HttpExchange httpExchange) throws IOException {
 
-        this.sendResponse(httpExchange, HttpStatus.OK, CmdResponse.CMD_RESPONSE_OK);
+        Tools.sendOk(httpExchange);
 
     }
 
@@ -108,7 +112,7 @@ public abstract class Cmd implements ICmd {
      */
     protected void sendInternalError(HttpExchange httpExchange) throws IOException {
 
-        this.sendResponse(httpExchange, HttpStatus.INTERNAL_SERVER_ERROR, CmdResponse.CMD_INTERNAL_SERVER_ERROR);
+        Tools.sendInternalError(httpExchange);
 
     }
 
@@ -119,23 +123,9 @@ public abstract class Cmd implements ICmd {
      * @param cr, the response to encode
      */
     protected void sendResponse( HttpExchange httpExchange, int httpStatus, CmdResponse cr ) throws IOException{
-        Headers responseHeaders= httpExchange.getResponseHeaders();
 
-        //java is utf-8
-        responseHeaders.set("Content-Type", "text/html;charset=UTF-8");
+        Tools.sendResponse(httpExchange, httpStatus, cr);
 
-        CmdResponseSerializer responseSerializer= new CmdResponseSerializer();
-
-        StringWriter sw= new StringWriter();
-        responseSerializer.encode( cr, new BufferedWriter(sw) );
-        String response= sw.toString();
-
-        byte[] bytes= response.getBytes(StandardCharsets.UTF_8);
-        httpExchange.sendResponseHeaders(httpStatus, bytes.length);
-
-        OutputStream os = httpExchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
     }
 
 }

@@ -11,7 +11,8 @@ import static org.matis.park.Utils.checkNotNull;
 
 /**
  * Created by manuel on 5/11/14.
- *
+ * <p>Stores the commands the system implements. The key used is a composition command code plus version string. So
+ * multiple versions of the same command are allowed</p>
  *
  * <p>Implementation notes</p>:
  * <ul>
@@ -22,7 +23,7 @@ import static org.matis.park.Utils.checkNotNull;
  */
 public class CmdRegistry {
 
-    private Map<String, ICmd> commands= new HashMap<String, ICmd>(5);
+    private Map<String, ICmd> commands= new HashMap<String,ICmd>();
 
 
     /**
@@ -44,6 +45,24 @@ public class CmdRegistry {
     }
 
     /**
+     * Key in maps
+     * @param cmd
+     * @return
+     */
+    private String buildKey(ICmd cmd){
+        return this.buildKey( cmd.getCmd(), cmd.getVersion());
+    }
+
+    /**
+     * Key in maps
+     * @param cmd
+     * @return
+     */
+    private String buildKey(String cmd, String version){
+        return cmd + ":" + version;
+    }
+
+    /**
      * Adds commands to the registry
      * @param cmd, command to add
      */
@@ -51,7 +70,7 @@ public class CmdRegistry {
 
         this.checkIsAGoodCommand(cmd);
 
-        if( this.commands.containsKey(cmd.getCmd())){
+        if( this.commands.containsKey(this.buildKey(cmd))){
             throw new AlreadyRegisteredException(cmd.getCmd());
         }
 
@@ -59,7 +78,7 @@ public class CmdRegistry {
             LOGGER.log(Level.INFO, "Adding cmd {0}", cmd.getCmd());
         }
 
-        this.commands.put(cmd.getCmd(), cmd);
+        this.commands.put(this.buildKey(cmd), cmd);
     }
 
     /**
@@ -71,11 +90,12 @@ public class CmdRegistry {
 
     /**
      * Get the desired command
-     * @param id, of the command
+     * @param cmd, version, of the command
      * @return null if id is not found or the cmd for this id
      */
-    public ICmd getCmd(String id) {
-        return this.commands.get(id);
+    public ICmd getCmd(String cmd, String version) {
+
+        return this.commands.get( this.buildKey(cmd,version));
     }
 
     /**
@@ -90,5 +110,6 @@ public class CmdRegistry {
 
         checkNotNull(cmd.getHttpMethod(), "http method is missing");
         checkNotEmpty(cmd.getCmd(), "cmd is missing");
+        checkNotEmpty(cmd.getVersion(), "version is missing");
     }
 }

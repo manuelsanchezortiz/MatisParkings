@@ -21,4 +21,10 @@ public interface ICmd extends HttpHandler {
      */
     String getCmd();
 
+    /**
+     * Version allows multiple versions of the same command to coexist
+     * @return
+     */
+    String getVersion();
+
 }

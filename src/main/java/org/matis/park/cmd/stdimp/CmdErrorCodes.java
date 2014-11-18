@@ -43,6 +43,11 @@ public class CmdErrorCodes {
     public static final int NO_ENTITY = -600;
 
     /**
+     * No version header (http) was found
+     */
+    public static final int NO_VERSION = -700;
+
+    /**
      * Protocol error: Evaluated by the server when receives commands
      */
     public static final int PROTOCOL_ERROR = -1000;

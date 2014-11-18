@@ -104,10 +104,10 @@ public class CmdQueryTest {
 
             HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, null);
 
-            assertTrue( r.getHttpStatus() == HttpStatus.OK );
-
             CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
             CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
+
+            assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             assertTrue( cr != null );
 
@@ -142,10 +142,10 @@ public class CmdQueryTest {
 
             HttpClient.Response r= c.sendGet(Constants.CMD_QUERY, params);
 
-            assertTrue( r.getHttpStatus() == HttpStatus.OK );
-
             CmdQueryResponseSerializer ser= new CmdQueryResponseSerializer();
             CmdQueryResponse cr= ser.decode( r.getBufferedReader() );
+
+            assertTrue( r.getHttpStatus() == HttpStatus.OK );
 
             assertTrue( cr != null );
 

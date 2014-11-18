@@ -15,6 +15,13 @@ import java.util.Map;
  */
 public class HttpClient {
 
+    private static final String HEADER_CMD_VERSION= "CMD_VERSION";
+
+    /**
+     * Service version string
+     */
+    public static final String SERVICE_VERSION= "001";
+
     public static final int DEFAULT_PORT= 8080;
 
     private String urlBase = "http://localhost:" + DEFAULT_PORT;
@@ -44,6 +51,20 @@ public class HttpClient {
      */
     public Response sendPost(String cmd, String payload) throws Exception {
 
+        return this.sendPost(cmd, payload, SERVICE_VERSION);
+
+    }
+
+    /**
+     * Send post with specific version, use only for testing as version must always be. Use {@link #sendPost(String, String, String)}
+     * @param cmd
+     * @param payload
+     * @param version
+     * @return
+     * @throws Exception
+     */
+    public Response sendPost(String cmd, String payload, String version) throws Exception {
+
         String url = urlBase;
         url += Constants.CTX + "/" + cmd;
 
@@ -51,13 +72,18 @@ public class HttpClient {
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         con.setRequestMethod( HttpMethod.POST.name());
+        if( !Utils.isEmpty(version)){
+            con.setRequestProperty( HEADER_CMD_VERSION  , version );
+        }
         con.setDoInput(true);
         con.setDoOutput(true);
         con.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
         con.getOutputStream().flush();
         con.getOutputStream().close();
 
-        return new Response(con.getResponseCode(), con.getInputStream());
+        InputStream is= con.getResponseCode() < 400 ? con.getInputStream() : con.getErrorStream();
+
+        return new Response(con.getResponseCode(), is);
 
     }
 
@@ -82,9 +108,12 @@ public class HttpClient {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        // optional default is GET
         con.setRequestMethod(HttpMethod.GET.name());
-        Response r = new Response(con.getResponseCode(), con.getInputStream());
+        con.setRequestProperty( HEADER_CMD_VERSION  , SERVICE_VERSION );
+
+        InputStream is= con.getResponseCode() < 400 ? con.getInputStream() : con.getErrorStream();
+
+        Response r = new Response(con.getResponseCode(), is);
 
         return r;
     }

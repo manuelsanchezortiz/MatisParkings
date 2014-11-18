@@ -75,15 +75,17 @@ public class CmdQueryResponseSerializer extends CmdResponseSerializerBase<CmdQue
 
         CmdQueryResponse cqr = super.decode(r);
 
+        //now extended query response
         try {
             //read each data in strict order
             String line = r.readLine();
-            if (!Utils.isEmpty(line)) {
-                cqr.setCount(Integer.parseInt(line));
-            } else {
-                //id is mandatory, else null
-                return null;
+            if (Utils.isEmpty(line)) {
+                //No more data, for example and error
+                return cqr;
             }
+
+            //query response
+            cqr.setCount(Integer.parseInt(line));
 
             line= r.readLine();
             if( !Utils.isEmpty(line)){
