@@ -48,7 +48,6 @@ public class CmdUpdate extends Cmd {
      * @throws IOException
      */
     protected void handleRequest(HttpExchange httpExchange) throws IOException {
-        //TODO select it from factory using protocol version (attribute on request)
 
         if( LOGGER.isLoggable(Level.INFO)) {
             LOGGER.log(Level.INFO, "Cmd update");
@@ -57,7 +56,6 @@ public class CmdUpdate extends Cmd {
         //load the post data
         ParkingSerializer dto= new ParkingSerializer();
 
-        //TODO improve read n parkings, the null parking may exists or not !!!
         BufferedReader br= new BufferedReader( new InputStreamReader( httpExchange.getRequestBody(), StandardCharsets.UTF_8) );
         Parking parking= dto.decode(br);
 

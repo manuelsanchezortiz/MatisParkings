@@ -6,8 +6,6 @@ package org.matis.park.server.util;
  */
 public class ParkException extends RuntimeException {
 
-    //TODO change all to be based on
-
     public ParkException(String msg){
         super(msg);
     }

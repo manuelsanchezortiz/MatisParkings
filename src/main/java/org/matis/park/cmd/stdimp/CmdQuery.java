@@ -34,8 +34,6 @@ import static org.matis.park.server.Logger.LOGGER;
  *     <li>Returns: Http OK, {@link org.matis.park.cmd.stdimp.CmdQueryResponse} after action execution</li>
  *     <li>Returned CmdResponse code: {@link org.matis.park.cmd.stdimp.CmdErrorCodes#NONE}: Operation succeeded</li>
  * </ul>
- * ????
- * TODO explain better
  *
  */
 public class CmdQuery extends Cmd {

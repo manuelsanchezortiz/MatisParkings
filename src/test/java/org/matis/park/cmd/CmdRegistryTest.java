@@ -5,8 +5,6 @@ import org.matis.park.cmd.stdimp.CmdAdd;
 
 public class CmdRegistryTest {
 
-    //TODO implement more test
-
     @Test( expected = CmdRegistry.AlreadyRegisteredException.class)
     public void whenAddingRepeatedCommandExceptionIsThrown() throws Exception {
 

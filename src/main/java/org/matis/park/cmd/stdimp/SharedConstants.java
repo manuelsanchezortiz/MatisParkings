@@ -6,10 +6,7 @@ package org.matis.park.cmd.stdimp;
  */
 public class SharedConstants {
 
-    /**
-     * Holds the parking id: int
-     */
-    public static final String ATTR_PARKING_ID= "PARKING_ID";
+
 
 
     public static final int QUERY_PAGE_SIZE= 10;
@@ -21,4 +18,8 @@ public class SharedConstants {
     public static final String PARAM_FULL= "full";
     public static final String PARAM_LAT= "lat";
     public static final String PARAM_LONG= "long";
+
+    public static final String HEADER_CMD_VERSION= "CMD_VERSION";
+    public static final String HEADER_ACCEPT_LANGUAGE= "Accept-Language";
+
 }

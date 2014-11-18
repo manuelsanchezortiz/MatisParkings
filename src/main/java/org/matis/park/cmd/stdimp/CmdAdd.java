@@ -49,7 +49,6 @@ public class CmdAdd extends Cmd {
      * @throws IOException
      */
     protected void handleRequest(HttpExchange httpExchange) throws IOException {
-        //TODO select it from factory using protocol version (attribute on request)
 
         if( LOGGER.isLoggable(Level.INFO)) {
             LOGGER.log(Level.INFO, "Cmd Add parking");

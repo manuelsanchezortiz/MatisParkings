@@ -2,13 +2,17 @@ package org.matis.park.cmd;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.matis.park.Utils;
 import org.matis.park.cmd.stdimp.CmdErrorCodes;
 import org.matis.park.cmd.stdimp.CmdResponse;
+import org.matis.park.cmd.stdimp.Session;
+import org.matis.park.cmd.stdimp.SharedConstants;
 import org.matis.park.server.ServerCtx;
 import org.matis.park.server.util.HttpStatus;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by manuel on 17/11/14.
@@ -24,13 +28,35 @@ public class CmdProxy implements HttpHandler {
         this.cmd= cmd;
     }
 
-    private static final String HEADER_CMD_VERSION= "CMD_VERSION";
-
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
 
-        List<String> headers= httpExchange.getRequestHeaders().get(HEADER_CMD_VERSION);
+        List<String> headers= httpExchange.getRequestHeaders().get(SharedConstants.HEADER_ACCEPT_LANGUAGE);
+
+        Locale loc= Locale.getDefault();
+        if( headers != null && headers.size() > 0){
+
+            //try to parse RFC1766 to java style
+            String s= headers.get(0);
+            if( !Utils.isEmpty(s)){
+                String[] parts= s.split("-");
+                loc= new Locale( parts.length >= 1 ? parts[0] : "", parts.length >= 2 ? parts[1] : "" , parts.length >= 3 ? parts[2] : "");
+            }
+        }
+
+        //wrap the request with session data
+        Session.session.get().put(Session.LOCALE, loc);
+        try {
+            this._handle(httpExchange);
+        }finally{
+            Session.session.get().remove(Session.LOCALE);
+        }
+    }
+
+    private void _handle(HttpExchange httpExchange) throws IOException {
+
+        List<String> headers= httpExchange.getRequestHeaders().get(SharedConstants.HEADER_CMD_VERSION);
 
         if( headers != null && headers.size() > 0  ){
 

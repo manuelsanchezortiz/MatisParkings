@@ -12,6 +12,7 @@ import org.matis.park.server.util.HttpStatus;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Locale;
 
 import static org.junit.Assert.assertTrue;
 
@@ -64,7 +65,7 @@ public class CmdAddTest {
         server.start();
 
         try {
-            HttpClient c = new HttpClient();
+            HttpClient c = new HttpClient(Locale.ENGLISH, null);
 
             final Parking p= this.getAParking();
             String s= TransferUtil.parkingToString(p);

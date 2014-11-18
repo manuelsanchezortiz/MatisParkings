@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Map;
 public class HttpClient {
 
     private static final String HEADER_CMD_VERSION= "CMD_VERSION";
-
+    private static final String HEADER_ACCEPT_LANGUAGE="Accept-Language";
     /**
      * Service version string
      */
@@ -26,19 +27,26 @@ public class HttpClient {
 
     private String urlBase = "http://localhost:" + DEFAULT_PORT;
 
+    //starts null so use default
+    private Locale locale;
+
     /**
      * Use default url for this client
      */
     public HttpClient() {
+        this.locale= Locale.getDefault();
     }
 
     /**
      * <p>Use another url, protocol and port must be included, for example</p>
      * <code>http://localhost:8080</code>
-     * @param url, url to use, set it when different from the default one which is <code>http://localhost:&gt;{@link #DEFAULT_PORT}&lt;</code>
+     * @param url, url to use, if not null, set it when different from the default one which is <code>http://localhost:&gt;{@link #DEFAULT_PORT}&lt;</code>
      */
-    public HttpClient(String url) {
-        this.urlBase = url;
+    public HttpClient(Locale locale, String url) {
+        this.locale= locale == null ? Locale.getDefault() : locale;
+        if( !Utils.isEmpty(url)) {
+            this.urlBase = url;
+        }
     }
 
     /**
@@ -56,11 +64,12 @@ public class HttpClient {
     }
 
     /**
-     * Send post with specific version, use only for testing as version must always be. Use {@link #sendPost(String, String, String)}
-     * @param cmd
-     * @param payload
-     * @param version
-     * @return
+     * Send post with specific version, used only for testing. Usually you use {@link #sendPost(String, String)}
+     *
+     * @param cmd, command
+     * @param payload, the data to send
+     * @param version, version of the command
+     * @return the response as a {@link org.matis.park.server.util.HttpClient.Response} object
      * @throws Exception
      */
     public Response sendPost(String cmd, String payload, String version) throws Exception {
@@ -71,17 +80,18 @@ public class HttpClient {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        con.setRequestMethod( HttpMethod.POST.name());
-        if( !Utils.isEmpty(version)){
-            con.setRequestProperty( HEADER_CMD_VERSION  , version );
+        con.setRequestMethod(HttpMethod.POST.name());
+        if (!Utils.isEmpty(version)) {
+            con.setRequestProperty(HEADER_CMD_VERSION, version);
         }
+        con.setRequestProperty(HEADER_ACCEPT_LANGUAGE, "ca");
         con.setDoInput(true);
         con.setDoOutput(true);
         con.getOutputStream().write(payload.getBytes(StandardCharsets.UTF_8));
         con.getOutputStream().flush();
         con.getOutputStream().close();
 
-        InputStream is= con.getResponseCode() < 400 ? con.getInputStream() : con.getErrorStream();
+        InputStream is = con.getResponseCode() < 400 ? con.getInputStream() : con.getErrorStream();
 
         return new Response(con.getResponseCode(), is);
 
@@ -92,7 +102,7 @@ public class HttpClient {
      *
      * @param cmd,        command to execute
      * @param params,     for the get
-     * @return the response, http status and may a message (may be null)
+     * @return the response, http status and maybe a message (may be null)
      * @throws IOException
      */
     public Response sendGet(String cmd, Map<String, Object> params) throws IOException {
@@ -108,14 +118,22 @@ public class HttpClient {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
+        con.setRequestProperty(HEADER_ACCEPT_LANGUAGE, "en");
         con.setRequestMethod(HttpMethod.GET.name());
-        con.setRequestProperty( HEADER_CMD_VERSION  , SERVICE_VERSION );
+        con.setRequestProperty(HEADER_CMD_VERSION, SERVICE_VERSION);
 
         InputStream is= con.getResponseCode() < 400 ? con.getInputStream() : con.getErrorStream();
 
-        Response r = new Response(con.getResponseCode(), is);
+        return new Response(con.getResponseCode(), is);
 
-        return r;
+    }
+
+    /**
+     * Getter for the current locale
+     * @return the locale used by this cliente, used to ask the server with a specific locale
+     */
+    public Locale getLocale() {
+        return locale;
     }
 
     /**
