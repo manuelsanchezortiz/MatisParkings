@@ -1,5 +1,7 @@
 package org.matis.park.server;
 
+import org.matis.park.cmd.ICmd;
+import org.matis.park.cmd.stdimp.Constants;
 import org.matis.park.model.Parking;
 
 import java.util.*;
@@ -115,6 +117,11 @@ public class Service {
         }
 
         System.out.println("Server started!");
-        System.out.println("Sample use: 'curl http://localhost:8080/parksvc/query?count=2");
+        System.out.println("Context: " + Constants.CTX );
+        System.out.println("Cmds:");
+        for(ICmd cmd: server.getCmdRegistry().getCmds() ){
+            System.out.println( "  " + cmd.getCmd() +  ", Version: " + cmd.getVersion() );
+        }
+        System.out.println("Sample use: 'curl --header \"CMD_VERSION:001\" http://localhost:8080/parksvc/query?count=2");
     }
 }
